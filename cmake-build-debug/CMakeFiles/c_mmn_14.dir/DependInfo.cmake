@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_CHECK_C
   "/home/linux/Desktop/c_mmn_14/first_transition.c" "/home/linux/Desktop/c_mmn_14/cmake-build-debug/CMakeFiles/c_mmn_14.dir/first_transition.c.o"
   "/home/linux/Desktop/c_mmn_14/instruction_validation.c" "/home/linux/Desktop/c_mmn_14/cmake-build-debug/CMakeFiles/c_mmn_14.dir/instruction_validation.c.o"
   "/home/linux/Desktop/c_mmn_14/main.c" "/home/linux/Desktop/c_mmn_14/cmake-build-debug/CMakeFiles/c_mmn_14.dir/main.c.o"
-  "/home/linux/Desktop/c_mmn_14/second_tansition.c" "/home/linux/Desktop/c_mmn_14/cmake-build-debug/CMakeFiles/c_mmn_14.dir/second_tansition.c.o"
+  "/home/linux/Desktop/c_mmn_14/second_transition.c" "/home/linux/Desktop/c_mmn_14/cmake-build-debug/CMakeFiles/c_mmn_14.dir/second_transition.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

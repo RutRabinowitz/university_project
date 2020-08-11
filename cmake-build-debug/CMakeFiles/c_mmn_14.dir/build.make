@@ -153,28 +153,28 @@ CMakeFiles/c_mmn_14.dir/first_transition.c.o.provides: CMakeFiles/c_mmn_14.dir/f
 CMakeFiles/c_mmn_14.dir/first_transition.c.o.provides.build: CMakeFiles/c_mmn_14.dir/first_transition.c.o
 
 
-CMakeFiles/c_mmn_14.dir/second_tansition.c.o: CMakeFiles/c_mmn_14.dir/flags.make
-CMakeFiles/c_mmn_14.dir/second_tansition.c.o: ../second_tansition.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/linux/Desktop/c_mmn_14/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/c_mmn_14.dir/second_tansition.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/c_mmn_14.dir/second_tansition.c.o   -c /home/linux/Desktop/c_mmn_14/second_tansition.c
+CMakeFiles/c_mmn_14.dir/second_transition.c.o: CMakeFiles/c_mmn_14.dir/flags.make
+CMakeFiles/c_mmn_14.dir/second_transition.c.o: ../second_transition.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/linux/Desktop/c_mmn_14/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/c_mmn_14.dir/second_transition.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/c_mmn_14.dir/second_transition.c.o   -c /home/linux/Desktop/c_mmn_14/second_transition.c
 
-CMakeFiles/c_mmn_14.dir/second_tansition.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/c_mmn_14.dir/second_tansition.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/linux/Desktop/c_mmn_14/second_tansition.c > CMakeFiles/c_mmn_14.dir/second_tansition.c.i
+CMakeFiles/c_mmn_14.dir/second_transition.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/c_mmn_14.dir/second_transition.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/linux/Desktop/c_mmn_14/second_transition.c > CMakeFiles/c_mmn_14.dir/second_transition.c.i
 
-CMakeFiles/c_mmn_14.dir/second_tansition.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/c_mmn_14.dir/second_tansition.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/linux/Desktop/c_mmn_14/second_tansition.c -o CMakeFiles/c_mmn_14.dir/second_tansition.c.s
+CMakeFiles/c_mmn_14.dir/second_transition.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/c_mmn_14.dir/second_transition.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/linux/Desktop/c_mmn_14/second_transition.c -o CMakeFiles/c_mmn_14.dir/second_transition.c.s
 
-CMakeFiles/c_mmn_14.dir/second_tansition.c.o.requires:
+CMakeFiles/c_mmn_14.dir/second_transition.c.o.requires:
 
-.PHONY : CMakeFiles/c_mmn_14.dir/second_tansition.c.o.requires
+.PHONY : CMakeFiles/c_mmn_14.dir/second_transition.c.o.requires
 
-CMakeFiles/c_mmn_14.dir/second_tansition.c.o.provides: CMakeFiles/c_mmn_14.dir/second_tansition.c.o.requires
-	$(MAKE) -f CMakeFiles/c_mmn_14.dir/build.make CMakeFiles/c_mmn_14.dir/second_tansition.c.o.provides.build
-.PHONY : CMakeFiles/c_mmn_14.dir/second_tansition.c.o.provides
+CMakeFiles/c_mmn_14.dir/second_transition.c.o.provides: CMakeFiles/c_mmn_14.dir/second_transition.c.o.requires
+	$(MAKE) -f CMakeFiles/c_mmn_14.dir/build.make CMakeFiles/c_mmn_14.dir/second_transition.c.o.provides.build
+.PHONY : CMakeFiles/c_mmn_14.dir/second_transition.c.o.provides
 
-CMakeFiles/c_mmn_14.dir/second_tansition.c.o.provides.build: CMakeFiles/c_mmn_14.dir/second_tansition.c.o
+CMakeFiles/c_mmn_14.dir/second_transition.c.o.provides.build: CMakeFiles/c_mmn_14.dir/second_transition.c.o
 
 
 # Object files for target c_mmn_14
@@ -183,7 +183,7 @@ c_mmn_14_OBJECTS = \
 "CMakeFiles/c_mmn_14.dir/code_func.c.o" \
 "CMakeFiles/c_mmn_14.dir/instruction_validation.c.o" \
 "CMakeFiles/c_mmn_14.dir/first_transition.c.o" \
-"CMakeFiles/c_mmn_14.dir/second_tansition.c.o"
+"CMakeFiles/c_mmn_14.dir/second_transition.c.o"
 
 # External object files for target c_mmn_14
 c_mmn_14_EXTERNAL_OBJECTS =
@@ -192,7 +192,7 @@ c_mmn_14: CMakeFiles/c_mmn_14.dir/main.c.o
 c_mmn_14: CMakeFiles/c_mmn_14.dir/code_func.c.o
 c_mmn_14: CMakeFiles/c_mmn_14.dir/instruction_validation.c.o
 c_mmn_14: CMakeFiles/c_mmn_14.dir/first_transition.c.o
-c_mmn_14: CMakeFiles/c_mmn_14.dir/second_tansition.c.o
+c_mmn_14: CMakeFiles/c_mmn_14.dir/second_transition.c.o
 c_mmn_14: CMakeFiles/c_mmn_14.dir/build.make
 c_mmn_14: CMakeFiles/c_mmn_14.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/linux/Desktop/c_mmn_14/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking C executable c_mmn_14"
@@ -207,7 +207,7 @@ CMakeFiles/c_mmn_14.dir/requires: CMakeFiles/c_mmn_14.dir/main.c.o.requires
 CMakeFiles/c_mmn_14.dir/requires: CMakeFiles/c_mmn_14.dir/code_func.c.o.requires
 CMakeFiles/c_mmn_14.dir/requires: CMakeFiles/c_mmn_14.dir/instruction_validation.c.o.requires
 CMakeFiles/c_mmn_14.dir/requires: CMakeFiles/c_mmn_14.dir/first_transition.c.o.requires
-CMakeFiles/c_mmn_14.dir/requires: CMakeFiles/c_mmn_14.dir/second_tansition.c.o.requires
+CMakeFiles/c_mmn_14.dir/requires: CMakeFiles/c_mmn_14.dir/second_transition.c.o.requires
 
 .PHONY : CMakeFiles/c_mmn_14.dir/requires
 

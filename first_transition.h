@@ -16,7 +16,7 @@ typedef struct Symbol
     char symbolName[LEN];
     size_t address;
     bool isInstruction;
-    bool isExtern;
+    int type;
 }Symbol;
 
 typedef struct DirectiveLine

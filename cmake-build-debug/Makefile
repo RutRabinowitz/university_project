@@ -231,32 +231,32 @@ main.c.s:
 	$(MAKE) -f CMakeFiles/c_mmn_14.dir/build.make CMakeFiles/c_mmn_14.dir/main.c.s
 .PHONY : main.c.s
 
-second_tansition.o: second_tansition.c.o
+second_transition.o: second_transition.c.o
 
-.PHONY : second_tansition.o
+.PHONY : second_transition.o
 
 # target to build an object file
-second_tansition.c.o:
-	$(MAKE) -f CMakeFiles/c_mmn_14.dir/build.make CMakeFiles/c_mmn_14.dir/second_tansition.c.o
-.PHONY : second_tansition.c.o
+second_transition.c.o:
+	$(MAKE) -f CMakeFiles/c_mmn_14.dir/build.make CMakeFiles/c_mmn_14.dir/second_transition.c.o
+.PHONY : second_transition.c.o
 
-second_tansition.i: second_tansition.c.i
+second_transition.i: second_transition.c.i
 
-.PHONY : second_tansition.i
+.PHONY : second_transition.i
 
 # target to preprocess a source file
-second_tansition.c.i:
-	$(MAKE) -f CMakeFiles/c_mmn_14.dir/build.make CMakeFiles/c_mmn_14.dir/second_tansition.c.i
-.PHONY : second_tansition.c.i
+second_transition.c.i:
+	$(MAKE) -f CMakeFiles/c_mmn_14.dir/build.make CMakeFiles/c_mmn_14.dir/second_transition.c.i
+.PHONY : second_transition.c.i
 
-second_tansition.s: second_tansition.c.s
+second_transition.s: second_transition.c.s
 
-.PHONY : second_tansition.s
+.PHONY : second_transition.s
 
 # target to generate assembly for a file
-second_tansition.c.s:
-	$(MAKE) -f CMakeFiles/c_mmn_14.dir/build.make CMakeFiles/c_mmn_14.dir/second_tansition.c.s
-.PHONY : second_tansition.c.s
+second_transition.c.s:
+	$(MAKE) -f CMakeFiles/c_mmn_14.dir/build.make CMakeFiles/c_mmn_14.dir/second_transition.c.s
+.PHONY : second_transition.c.s
 
 # Help Target
 help:
@@ -279,9 +279,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
-	@echo "... second_tansition.o"
-	@echo "... second_tansition.i"
-	@echo "... second_tansition.s"
+	@echo "... second_transition.o"
+	@echo "... second_transition.i"
+	@echo "... second_transition.s"
 .PHONY : help
 
 

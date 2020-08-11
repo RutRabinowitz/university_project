@@ -99,10 +99,10 @@
 		<Unit filename="/home/linux/Desktop/c_mmn_14/main.c">
 			<Option target="c_mmn_14"/>
 		</Unit>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/second_tansition.c">
+		<Unit filename="/home/linux/Desktop/c_mmn_14/second_transition.c">
 			<Option target="c_mmn_14"/>
 		</Unit>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/second_tansition.h">
+		<Unit filename="/home/linux/Desktop/c_mmn_14/second_transition.h">
 			<Option target="c_mmn_14"/>
 		</Unit>
 		<Unit filename="/home/linux/Desktop/c_mmn_14/CMakeLists.txt">

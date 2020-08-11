@@ -1,1 +1,1 @@
-/usr/bin/cc -g   CMakeFiles/c_mmn_14.dir/main.c.o CMakeFiles/c_mmn_14.dir/code_func.c.o CMakeFiles/c_mmn_14.dir/instruction_validation.c.o CMakeFiles/c_mmn_14.dir/first_transition.c.o CMakeFiles/c_mmn_14.dir/second_tansition.c.o  -o c_mmn_14 
+/usr/bin/cc -g   CMakeFiles/c_mmn_14.dir/main.c.o CMakeFiles/c_mmn_14.dir/code_func.c.o CMakeFiles/c_mmn_14.dir/instruction_validation.c.o CMakeFiles/c_mmn_14.dir/first_transition.c.o CMakeFiles/c_mmn_14.dir/second_transition.c.o  -o c_mmn_14 

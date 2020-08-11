@@ -25,6 +25,7 @@ extern Symbol *symbolTable;
 extern DirectiveLine *memory;
 extern GuidanceLine *data;
 
+extern size_t cnt;
 extern size_t ic;
 extern size_t numLines;
 extern size_t numGuidance;
@@ -95,46 +96,49 @@ bool isTwoOperands(const char * line)
 
 
 
-Word relative_address(const char * line, size_t j, size_t directiveIdx)
+Word direct_address(const char * line, size_t j, size_t directiveIdx, size_t num)
+{
+    Word result;
+    size_t k = j;
+
+    while (line[j] && line[j] != ' ' && line[j] != '\t' && line[j] != '\n' && line[j++] != ',') {}
+    j--;
+    int idx = isInTable(str_slice(line, k, j));
+
+    if (idx == -1)
+        printf("1error...");
+    else if (directives[directiveIdx].AddressingMethodSrc[1]) {
+        printBinaryRepresentation(1, 2);
+        printBinaryRepresentation(0, 3);
+        p(a, 16, 17, 2);
+        p(a, 13, 15, 0);
+        result.isFirst= true;
+        result.firstWord = (symbolTable[idx].address << 3)|symbolTable[idx].type;
+    }
+    return result;
+}
+
+Word relative_address(const char * line, size_t j, size_t directiveIdx, size_t num)
 {
     Word result;
     size_t k = j;
     while (line[j] && line[j] != ' ' && line[j] != '\t' && line[j] != '\n' && line[j++] != ',') {}
     j--;
     int idx = isInTable(str_slice(line, k, j));
-    result.firstWord = symbolTable[idx].address;
-//    printf("\n%d\n", symbolTable[idx].address);
-    if (idx == -1)
+
+    if (idx == -1 || symbolTable[idx].type == 1)
         printf("3error...");
-    else if (directives[directiveIdx].AddressingMethodSrc[1])
+    else if (directives[directiveIdx].AddressingMethodSrc[2])
     {
-        printBinaryRepresentation(1, 2);
+        printBinaryRepresentation(2, 2);
         printBinaryRepresentation(0, 3);
         p(a, 16, 17, 1);
         p(a, 13, 15, 0);
-        result.isFirst= true;
+        result.isFirst = true;
+        result.firstWord =  (symbolTable[idx].address - num << 3)|4;
     }
     return result;
-}
 
-Word direct_address(const char * line, size_t j, size_t directiveIdx)
-{
-    Word result;
-    size_t k = j;
-    while (line[j] && line[j] != ' ' && line[j] != '\t' && line[j] != '\n' && line[j++] != ',') {}
-    j--;
-    int idx = isInTable(str_slice(line, k + 1, j));
-    if (idx == -1 || symbolTable[idx].isExtern == true)
-        printf("1error...");
-    else if (directives[directiveIdx].AddressingMethodSrc[2]) {
-        printBinaryRepresentation(2, 2);
-        printBinaryRepresentation(0, 3);
-        p(a, 16, 17, 2);
-        p(a, 13, 15, 0);
-        result.isFirst= true;
-        result.firstWord = symbolTable[idx].address;
-    }
-    return result;
 }
 
 
@@ -151,30 +155,30 @@ Word immediate_address(const char * line, size_t j, size_t directiveIdx)
         printBinaryRepresentation(0, 3);
         p(a, 16, 17, 0);
         p(a, 13, 15, 0);
-        result.isFirst= true;
-        result.firstWord= atoi(str_slice(line, k + 1, j));
+        result.isFirst = true;
+        result.firstWord = (atoi(str_slice(line, k + 1, j)) << 3)|4;
     }
     return result;
 }
 
 
-Word first_operand(const char * line, size_t j, size_t directiveIdx)
+Word first_operand(const char * line, size_t j, size_t directiveIdx, size_t num)
 {
     Word result;
     if (line[j] && !(line[j] == 'r' && j + 1 < strlen(line) && (line[j + 1] >= '1' && line[j + 1] <= '7'))) {
         if (line[j] == '&')
         {
-            result = direct_address(line, j, directiveIdx);
+            result = relative_address(line, j, directiveIdx, num);
 
         }
         else if (line[j] == '#') {
             result = immediate_address(line, j, directiveIdx);
         }
-        else {
-            result = relative_address(line, j, directiveIdx);
+        else
+        {
+            result = direct_address(line, j, directiveIdx, num);
         }
     }
-//    printf("%d ", directiveIdx);
     else if (directives[directiveIdx].AddressingMethodSrc[3])
     {
         printBinaryRepresentation(3, 2);
@@ -188,22 +192,21 @@ Word first_operand(const char * line, size_t j, size_t directiveIdx)
 }
 
 
-Word second_relative_address(const char * line, size_t j, size_t directiveIdx, Word result)
+Word second_relative_address(const char * line, size_t j, size_t directiveIdx, Word result, size_t num)
 {
     size_t k = j;
     while (line[j] && line[j] != ' ' && line[j] != '\t' && line[j] != '\n' && line[j++] != ',') {}
     int idx = isInTable(str_slice(line, k + 1, j));
 
-    if (idx == -1 || symbolTable[idx].isExtern == true)
+    if (idx == -1 || symbolTable[idx].type == 1)
         printf("error...");
     else if (directives[directiveIdx].AddressingMethodDst[2]) {
         printBinaryRepresentation(2, 2);
         printBinaryRepresentation(0, 3);
-
         p(a, 11, 12, 2);
         p(a, 8, 10, 0);
         result.isSecond= true;
-        result.secondWord = symbolTable[idx].address;
+        result.secondWord = (symbolTable[idx].address - num << 3)|4;
     }
     return result;
 }
@@ -222,7 +225,8 @@ Word second_direct_address(const char * line, size_t j, size_t directiveIdx, Wor
         p(a, 11, 12, 1);
         p(a, 8, 10, 0);
         result.isSecond= true;
-        result.secondWord = symbolTable[idx].address;
+        result.secondWord = (symbolTable[idx].address << 3)|symbolTable[idx].type;
+
     }
     return result;
 }
@@ -237,16 +241,16 @@ Word second_immediate_address(const char * line, size_t j, size_t directiveIdx, 
         printBinaryRepresentation(0, 5);
         p(a, 8, 12, 0);
         result.isSecond = true;
-        result.secondWord = atoi(str_slice(line, k + 1, j));
+        result.secondWord = (atoi(str_slice(line, k + 1, j)) << 3)|4;
     }
     return result;
 }
 
-Word second_operand(const char * line, size_t j, size_t directiveIdx, Word result)
+Word second_operand(const char * line, size_t j, size_t directiveIdx, Word result, size_t num)
 {
     if (line[j] && !(line[j] == 'r' && j + 1 < strlen(line) && (line[j + 1] >= '1' && line[j + 1] <= '7'))) {
         if (line[j] == '&') {
-            result = second_relative_address(line, j, directiveIdx, result);
+            result = second_relative_address(line, j, directiveIdx, result, num);
         }
         else if (line[j] == '#')
         {
@@ -275,7 +279,7 @@ Word codeDirective(const char * line, size_t i, size_t num)
     a = 0;
     printf("%s", line);
     printf("0000");
-    printf("%d\t", num++);
+    printf("%d\t", num);
     Word result;
     if(!strcmp("stop", str_slice(line, i, i + 4)))
     {
@@ -295,7 +299,7 @@ Word codeDirective(const char * line, size_t i, size_t num)
     {
         if(isValidTwoOperands(directiveIdx))
         {
-            result = first_operand(line, j, directiveIdx);
+            result = first_operand(line, j, directiveIdx, num);
             while(line[j] && !(line[j] == ','))
                 j++;
             if (j + 1 < strlen(line) && line[j + 1] == ' ')
@@ -312,7 +316,7 @@ Word codeDirective(const char * line, size_t i, size_t num)
         p(a, 13, 17, 0);
         printBinaryRepresentation(0, 5);
     }
-    result = second_operand(line, j, directiveIdx, result);
+    result = second_operand(line, j, directiveIdx, result, num);
     printBinaryRepresentation(directives[directiveIdx].funct, 5);
     printBinaryRepresentation(4, 3);
     p(a, 3, 7, directives[directiveIdx].funct);
@@ -323,24 +327,16 @@ Word codeDirective(const char * line, size_t i, size_t num)
     {
         a = 0;
         printf("0000");
-        printf("%d\t", num++);
-        printBinaryRepresentation(result.firstWord, 21);
-        printBinaryRepresentation(4, 3);
-        p(a, 3, 23, result.firstWord);
-        p(a, 0, 2, 4);
-//        printf("\n%x", a);
+        printf("%d\t", ++num);
+        printBinaryRepresentation(result.firstWord, 24);
         printf("\n");
     }
     if(result.isSecond)
     {
         a = 0;
         printf("0000");
-        printf("%d\t", num);
-        printBinaryRepresentation(result.secondWord, 21);
-        printBinaryRepresentation(4, 3);
-        p(a, 3, 23, result.secondWord);
-        p(a, 0, 2, 4);
-//        printf("\n%x", a);
+        printf("%d\t", ++num);
+        printBinaryRepresentation(result.secondWord, 24);
         printf("\n");
     }
     return result;
@@ -385,6 +381,10 @@ void codeGuidance(GuidanceLine line)
 
 void second_iteration(const char * fileName)
 {
+    for (int i = 0; i < cnt; ++i)
+    {
+        printf("%d: %s\t%d\t%d\t%d\n", i, symbolTable[i].symbolName, symbolTable[i].isInstruction, symbolTable[i].address, symbolTable[i].type);
+    }
     for(size_t i = 0; i < numLines; ++i)
         codeLine(memory[i].text, memory[i].address);
     printf("\n");

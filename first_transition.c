@@ -14,9 +14,14 @@
 size_t ic = 100;
 size_t dc = 0;
 size_t cnt = 0;
+size_t numEntries = 0;
 size_t numLines = 0;
 size_t numGuidance = 0;
 
+
+typedef struct EntrySymbol {
+    char name[80];
+}EntrySymbol;
 
 
 void checkLine(const char * line);
@@ -24,6 +29,7 @@ void checkLine(const char * line);
 Symbol *symbolTable;
 DirectiveLine *memory;
 GuidanceLine *data;
+EntrySymbol *entrySymbols;
 
 
 int isInTable(const char * symbol)
@@ -114,7 +120,7 @@ void label(const char * line, size_t i) {
                 symbolTable[cnt - 1].isInstruction = false;
                 symbolTable[cnt - 1].address = dc;
             }
-            symbolTable[cnt - 1].isExtern = false;
+            symbolTable[cnt - 1].type = 4;
             checkLine(str_slice(line, j + 1, strlen(line)));
         }
     }
@@ -169,7 +175,13 @@ void guidanceSen(const char * line, size_t i)
             dc++;
         }
 
-        else if (!strcmp(s, "en")){}
+        else if (!strcmp(s, "en")){
+            numEntries++;
+            entrySymbols = (EntrySymbol*) realloc(entrySymbols, numEntries * sizeof(Symbol));
+            size_t j = i;
+            while(line[j++]){}
+            strcpy(entrySymbols[numEntries - 1].name, str_slice(line, i + 7, j - 2));
+        }
 
         else if (!strcmp(s, "ex"))
         {
@@ -179,7 +191,7 @@ void guidanceSen(const char * line, size_t i)
             while(line[j++]){}
             strcpy(symbolTable[cnt - 1].symbolName, str_slice(line, i + 8, j - 2));
             symbolTable[cnt - 1].address = 0;
-            symbolTable[cnt - 1].isExtern = true;
+            symbolTable[cnt - 1].type = 1;
             symbolTable[cnt - 1].isInstruction = false;
         }
     }
@@ -210,6 +222,32 @@ void checkLine(const char * line)
 }
 
 
+void initDataTables()
+{
+    memory = (DirectiveLine *)malloc(sizeof(DirectiveLine));
+    data = (GuidanceLine*)malloc(sizeof(GuidanceLine));
+    symbolTable = (Symbol*)malloc(sizeof(Symbol));
+    entrySymbols = (EntrySymbol*)malloc(sizeof(EntrySymbol));
+}
+
+void signEntrySymbols()
+{
+    for (int i = 0; i < cnt; ++i)
+    {
+        if (!symbolTable[i].isInstruction && symbolTable[i].type != 1){
+            symbolTable[i].address += ic;
+        }
+        if(symbolTable[i].type != 1)
+            symbolTable[i].type = 2;
+
+//        for (int j = 0; j < numEntries; ++j)
+//        {
+//            if(!strcmp(entrySymbols[j].name, symbolTable[i].symbolName))
+//                symbolTable[i].type = 2;
+//        }
+    }
+}
+
 void first_iteration(const char * fileName) {
     FILE * fp;
     char * line = NULL;
@@ -218,9 +256,7 @@ void first_iteration(const char * fileName) {
 
     if (fp == NULL)
         exit(EXIT_FAILURE);
-    memory = (DirectiveLine *)malloc(sizeof(DirectiveLine));
-    data = (GuidanceLine*)malloc(sizeof(GuidanceLine));
-    symbolTable = (Symbol*)malloc(sizeof(Symbol));
+    initDataTables();
     while ((getline(&line, &len, fp)) != -1)
         checkLine(line);
 
@@ -230,12 +266,9 @@ void first_iteration(const char * fileName) {
 
     printf("%d\n", ic);
     printf("%d\n", dc);
-
+    signEntrySymbols();
     for (int i = 0; i < cnt; ++i)
     {
-        if (!symbolTable[i].isInstruction && !symbolTable[i].isExtern)
-            symbolTable[i].address += ic;
-        printf("%s\t%d\t%d\t%d\n", symbolTable[i].symbolName, symbolTable[i].isInstruction, symbolTable[i].address, symbolTable[i].isExtern);
-        printf("%d\n", strlen(symbolTable[i].symbolName));
+        printf("%s\t%d\t%d\t%d\n", symbolTable[i].symbolName, symbolTable[i].isInstruction, symbolTable[i].address, symbolTable[i].type);
     }
 }
