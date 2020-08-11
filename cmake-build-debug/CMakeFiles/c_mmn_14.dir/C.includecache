@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/linux/Desktop/c_mmn_14/code_func.c
+code_func.h
+/home/linux/Desktop/c_mmn_14/code_func.h
+string.h
+-
+
+/home/linux/Desktop/c_mmn_14/code_func.h
+
+/home/linux/Desktop/c_mmn_14/instruction_validation.c
+instruction_validation.h
+/home/linux/Desktop/c_mmn_14/instruction_validation.h
+code_func.h
+/home/linux/Desktop/c_mmn_14/code_func.h
+stdio.h
+-
+string.h
+-
+stdlib.h
+-
+
+/home/linux/Desktop/c_mmn_14/instruction_validation.h
+
+/home/linux/Desktop/c_mmn_14/main.c
+stdio.h
+-
+code_func.h
+/home/linux/Desktop/c_mmn_14/code_func.h
+instruction_validation.h
+/home/linux/Desktop/c_mmn_14/instruction_validation.h
+stdlib.h
+-
+string.h
+-
+
