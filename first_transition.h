@@ -6,6 +6,7 @@
 #define C_MMN_14_FIRST_TRANSITION_H
 
 #include <stdio.h>
+
 #define LEN 31
 
 void first_iteration(const char * fileName);
@@ -39,5 +40,6 @@ typedef struct GuidanceLine
 //    size_t lineNum;
 }GuidanceLine;
 
+int isInTable(const char * symbol);
 
 #endif //C_MMN_14_FIRST_TRANSITION_H

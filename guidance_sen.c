@@ -7,7 +7,6 @@
 #include <string.h>
 #include "code_func.h"
 #include "first_transition.h"
-#include "instruction_validation.h"
 #include "read_files.h"
 
 extern Symbol *symbolTable;

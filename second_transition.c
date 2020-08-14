@@ -5,17 +5,13 @@
 #include "second_transition.h"
 #include <string.h>
 #include "code_func.h"
-#include "instruction_validation.h"
 #include "first_operand.h"
 #include "second_operand.h"
 #include "read_files.h"
 #include <stdlib.h>
 
 
-
-
-void checkLine(const char * line);
-int isInTable(const char * symbol);
+//int isInTable(const char * symbol);
 
 
 extern Symbol *symbolTable;
@@ -112,8 +108,6 @@ void printLineNum(int num)
 }
 
 
-
-
 void printFirst(Word word, size_t num)
 {
     if(word.isFirst)
@@ -128,15 +122,19 @@ void printFirst(Word word, size_t num)
     }
 }
 
+
 void printSecond(Word word, size_t num)
 {
     if(word.isSecond)
     {
-//        currentWord = 0;
-//        printLineNum(num + 2);
-//        printBinaryRepresentation(word.secondWord, 24);
-//        printf("\n");
-//        printHexNum(word.secondWord);
+        currentWord = 0;
+        if (word.isFirst)
+            printLineNum(num + 2);
+        else
+            printLineNum(num + 1);
+        printBinaryRepresentation(word.secondWord, 24);
+        printf("\n");
+        printHexNum(word.secondWord);
         output = (int *) realloc(output, num + 2 * sizeof(int));
         output[num + 1] = word.secondWord;
     }
@@ -159,7 +157,7 @@ Word codeDirective(DirectiveLine line, size_t i)
     printLineNum(line.address);
     Word result;
 
-    int directiveIdx = getOpcod(str_slice(line.text,i, i + 3));
+    int directiveIdx = getOpcode(str_slice(line.text,i, i + 3));
     if (directiveIdx == 14 || (strlen(line.text) >= 4 && !strcmp(str_slice(line.text, i, i + 4), "stop")))
     {
         func();
@@ -184,7 +182,7 @@ Word codeDirective(DirectiveLine line, size_t i)
             }
             else
             {
-                printf("error... extra operand");
+                error(E_SECOND_OPERAND, line.lineNum);
             }
         }
         else
@@ -202,8 +200,8 @@ Word codeDirective(DirectiveLine line, size_t i)
     printBinaryRepresentation(currentWord, 24);
 //    output = (int *) realloc(output, num * sizeof(int));
     output[line.address - 1] = currentWord;
-//    printf("\n");
-//    printHexNum(currentWord);
+    printf("\n");
+    printHexNum(currentWord);
     printFirst(result, line.address);
     printSecond(result, line.address);
     return result;
@@ -240,7 +238,7 @@ void second_iteration(const char * fileName)
     output = (int*)malloc((dc + ic)*sizeof(int));
     for (int i = 0; i < cnt; ++i)
     {
-        printf("%ld: %s\t%d\t%ld\t%ld\n", i, symbolTable[i].symbolName, symbolTable[i].isInstruction, symbolTable[i].address, symbolTable[i].type);
+        printf("%d: %s\t%d\t%ld\t%d\n", i, symbolTable[i].symbolName, symbolTable[i].isInstruction, symbolTable[i].address, symbolTable[i].type);
     }
     for(size_t i = 0; i < numLines; ++i)
         codeLine(memory[i]);

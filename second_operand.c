@@ -6,8 +6,10 @@
 #include <stddef.h>
 #include "second_transition.h"
 #include "code_func.h"
-#include "instruction_validation.h"
-
+#include "read_files.h"
+#include <stdlib.h>
+#include <string.h>
+#include "first_transition.h"
 
 extern Symbol *symbolTable;
 //extern int currentWord;
@@ -29,7 +31,7 @@ static Word relative_address(DirectiveLine line, size_t j, size_t directiveIdx, 
     while (line.text[j] && line.text[j] != ' ' && line.text[j] != '\t' && line.text[j] != '\n' && line.text[j++] != ',') {}
     int idx = isInTable(str_slice(line.text, k + 1, j));
     if (idx == -1 || symbolTable[idx].type == 1)
-        printf("!!!error...");
+        error(E_SECOND_OPERAND, line.lineNum);
     else if (directives[directiveIdx].AddressingMethodDst[2]) {
         setCurrWordBits(11, 12, 2);
         setCurrWordBits(8, 10, 0);
@@ -45,7 +47,7 @@ static Word direct_address(DirectiveLine line, size_t j, size_t directiveIdx, Wo
     while (line.text[j] && line.text[j] != ' ' && line.text[j] != '\t' && line.text[j] != '\n' && line.text[j++] != ',') {}
     int idx = isInTable(str_slice(line.text, k, j));
     if (idx == -1)
-        printf("!!error...");
+        error(E_SECOND_OPERAND, line.lineNum);
     else if (directives[directiveIdx].AddressingMethodDst[1])
     {
         setCurrWordBits(11, 12, 1);
@@ -62,7 +64,7 @@ static Word immediate_address(DirectiveLine line, size_t j, size_t directiveIdx,
     size_t k = j;
     while (line.text[j] && line.text[j] != ' ' && line.text[j] != '\t' && line.text[j] != '\n' && line.text[j++] != ',') {}
     if (!isNumber(str_slice(line.text, k + 1, j)))
-        printf("!error...");
+        error(E_SECOND_OPERAND, line.lineNum);
     else if (directives[directiveIdx].AddressingMethodDst[0]) {
         setCurrWordBits(8, 12, 0);
         result = setSecondWord(true, (atoi(str_slice(line.text, k + 1, j)) << 3)|4);

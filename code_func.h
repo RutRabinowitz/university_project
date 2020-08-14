@@ -5,9 +5,7 @@
 #ifndef C_MMN_14_CODE_FUNC_H
 #define C_MMN_14_CODE_FUNC_H
 
-const char * instructions_names[15];
-int instructions_opcodes[15][2];
-int getOpcod(const char *instruction_name);
+
 int getOpcode(const char *instruction_name);
 typedef struct Directive{
     int opcode;
@@ -16,6 +14,8 @@ typedef struct Directive{
     int AddressingMethodSrc[4];
     int AddressingMethodDst[4];
 }Directive;
+
+char * str_slice(const char str[], int slice_from, int slice_to);
 void init();
 Directive directives[16];
 #endif //C_MMN_14_CODE_FUNC_H

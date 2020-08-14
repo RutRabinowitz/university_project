@@ -5,8 +5,8 @@
 #include "directive_sen.h"
 #include <stdlib.h>
 #include <string.h>
-#include "instruction_validation.h"
 #include "first_transition.h"
+#include "code_func.h"
 
 extern DirectiveLine *memory;
 extern size_t numLines;

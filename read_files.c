@@ -4,6 +4,9 @@
 
 #include "read_files.h"
 #include "first_transition.h"
+#include "second_transition.h"
+#include "code_func.h"
+#include <string.h>
 
 bool isValidFile;
 
@@ -11,7 +14,7 @@ bool isValidFile;
 void printError(Error err, size_t numLine)
 {
     char * errorMsg[4] = {"invalid syntax", "first operand is not valid", "second operand is not valid", "symbol"};
-    printf("error in line %d: %s\n", numLine, errorMsg[err]);
+    printf("error in line %ld: %s\n", numLine, errorMsg[err]);
 }
 
 
@@ -41,5 +44,4 @@ void read_files(int argc, char *argv[])
                 printf("yes\n");
         }
     }
-    return 0;
 }
