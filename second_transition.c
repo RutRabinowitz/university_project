@@ -3,19 +3,16 @@
 //
 
 #include "second_transition.h"
-#include "first_transition.h"
 #include <string.h>
 #include "code_func.h"
 #include "instruction_validation.h"
+#include "first_operand.h"
+#include "second_operand.h"
+#include "read_files.h"
 #include <stdlib.h>
 
 
-typedef struct Word{
-    bool isFirst;
-    int firstWord;
-    bool isSecond;
-    int secondWord;
-} Word;
+
 
 void checkLine(const char * line);
 int isInTable(const char * symbol);
@@ -29,10 +26,12 @@ extern size_t cnt;
 extern size_t ic;
 extern size_t numLines;
 extern size_t numGuidance;
+extern size_t dc;
+int currentWord;
+int *output;
 
 
 
-int a;
 void printBinaryRepresentation(int number, size_t j)
 {
     unsigned int musk = 1 << j - 1;
@@ -44,14 +43,26 @@ void printBinaryRepresentation(int number, size_t j)
     }
 }
 
-int p(int num, int start, int stop, int number)
+
+
+void printHexNum(int word)
+{
+    int musk = 15 << 20;
+
+    for (size_t i = 0; i < 6; i++, musk = musk >> 4)
+    {
+        printf("%x", (word&musk)>>(20 - 4*i));
+    }
+    printf("\n");
+}
+
+int setCurrWordBits(int start, int stop, int number)
 {
     number = number <<  start;
     for (size_t i = 0; i < 24; ++i)
-        a = a | number;
+        currentWord = currentWord | number;
 
 }
-
 
 
 bool isNumber(const char * str)
@@ -94,301 +105,151 @@ bool isTwoOperands(const char * line)
 
 
 
-
-
-Word direct_address(const char * line, size_t j, size_t directiveIdx, size_t num)
+void printLineNum(int num)
 {
-    Word result;
-    size_t k = j;
-
-    while (line[j] && line[j] != ' ' && line[j] != '\t' && line[j] != '\n' && line[j++] != ',') {}
-    j--;
-    int idx = isInTable(str_slice(line, k, j));
-
-    if (idx == -1)
-        printf("1error...");
-    else if (directives[directiveIdx].AddressingMethodSrc[1]) {
-        printBinaryRepresentation(1, 2);
-        printBinaryRepresentation(0, 3);
-        p(a, 16, 17, 2);
-        p(a, 13, 15, 0);
-        result.isFirst= true;
-        result.firstWord = (symbolTable[idx].address << 3)|symbolTable[idx].type;
-    }
-    return result;
-}
-
-Word relative_address(const char * line, size_t j, size_t directiveIdx, size_t num)
-{
-    Word result;
-    size_t k = j;
-    while (line[j] && line[j] != ' ' && line[j] != '\t' && line[j] != '\n' && line[j++] != ',') {}
-    j--;
-    int idx = isInTable(str_slice(line, k, j));
-
-    if (idx == -1 || symbolTable[idx].type == 1)
-        printf("3error...");
-    else if (directives[directiveIdx].AddressingMethodSrc[2])
-    {
-        printBinaryRepresentation(2, 2);
-        printBinaryRepresentation(0, 3);
-        p(a, 16, 17, 1);
-        p(a, 13, 15, 0);
-        result.isFirst = true;
-        result.firstWord =  (symbolTable[idx].address - num << 3)|4;
-    }
-    return result;
-
-}
-
-
-Word immediate_address(const char * line, size_t j, size_t directiveIdx)
-{
-    Word result;
-    size_t k = j;
-    while (line[j] && line[j] != ' ' && line[j] != '\t' && line[j] != '\n' && line[j++] != ',') {}
-    j--;
-    if (!isNumber(str_slice(line, k + 1, j)))
-        printf("2error...");
-    else if (directives[directiveIdx].AddressingMethodSrc[0]) {
-        printBinaryRepresentation(0, 2);
-        printBinaryRepresentation(0, 3);
-        p(a, 16, 17, 0);
-        p(a, 13, 15, 0);
-        result.isFirst = true;
-        result.firstWord = (atoi(str_slice(line, k + 1, j)) << 3)|4;
-    }
-    return result;
-}
-
-
-Word first_operand(const char * line, size_t j, size_t directiveIdx, size_t num)
-{
-    Word result;
-    if (line[j] && !(line[j] == 'r' && j + 1 < strlen(line) && (line[j + 1] >= '1' && line[j + 1] <= '7'))) {
-        if (line[j] == '&')
-        {
-            result = relative_address(line, j, directiveIdx, num);
-
-        }
-        else if (line[j] == '#') {
-            result = immediate_address(line, j, directiveIdx);
-        }
-        else
-        {
-            result = direct_address(line, j, directiveIdx, num);
-        }
-    }
-    else if (directives[directiveIdx].AddressingMethodSrc[3])
-    {
-        printBinaryRepresentation(3, 2);
-        printBinaryRepresentation(line[j + 1] - 48, 3);
-        p(a, 16, 17, 3);
-        p(a, 13, 15, line[j + 1] - 48);
-        result.isFirst= false;
-    }
-
-    return result;
-}
-
-
-Word second_relative_address(const char * line, size_t j, size_t directiveIdx, Word result, size_t num)
-{
-    size_t k = j;
-    while (line[j] && line[j] != ' ' && line[j] != '\t' && line[j] != '\n' && line[j++] != ',') {}
-    int idx = isInTable(str_slice(line, k + 1, j));
-
-    if (idx == -1 || symbolTable[idx].type == 1)
-        printf("error...");
-    else if (directives[directiveIdx].AddressingMethodDst[2]) {
-        printBinaryRepresentation(2, 2);
-        printBinaryRepresentation(0, 3);
-        p(a, 11, 12, 2);
-        p(a, 8, 10, 0);
-        result.isSecond= true;
-        result.secondWord = (symbolTable[idx].address - num << 3)|4;
-    }
-    return result;
-}
-
-
-Word second_direct_address(const char * line, size_t j, size_t directiveIdx, Word result)
-{
-    size_t k = j;
-    while (line[j] && line[j] != ' ' && line[j] != '\t' && line[j] != '\n' && line[j++] != ',') {}
-    int idx = isInTable(str_slice(line, k, j));
-    if (idx == -1)
-        printf("error...");
-    else if (directives[directiveIdx].AddressingMethodDst[1]) {
-        printBinaryRepresentation(1, 2);
-        printBinaryRepresentation(0, 3);
-        p(a, 11, 12, 1);
-        p(a, 8, 10, 0);
-        result.isSecond= true;
-        result.secondWord = (symbolTable[idx].address << 3)|symbolTable[idx].type;
-
-    }
-    return result;
-}
-
-Word second_immediate_address(const char * line, size_t j, size_t directiveIdx, Word result)
-{
-    size_t k = j;
-    while (line[j] && line[j] != ' ' && line[j] != '\t' && line[j] != '\n' && line[j++] != ',') {}
-    if (!isNumber(str_slice(line, k + 1, j)))
-        printf("error...");
-    else if (directives[directiveIdx].AddressingMethodDst[0]) {
-        printBinaryRepresentation(0, 5);
-        p(a, 8, 12, 0);
-        result.isSecond = true;
-        result.secondWord = (atoi(str_slice(line, k + 1, j)) << 3)|4;
-    }
-    return result;
-}
-
-Word second_operand(const char * line, size_t j, size_t directiveIdx, Word result, size_t num)
-{
-    if (line[j] && !(line[j] == 'r' && j + 1 < strlen(line) && (line[j + 1] >= '1' && line[j + 1] <= '7'))) {
-        if (line[j] == '&') {
-            result = second_relative_address(line, j, directiveIdx, result, num);
-        }
-        else if (line[j] == '#')
-        {
-            result = second_immediate_address(line, j, directiveIdx, result);
-        }
-        else
-            {
-            result = second_direct_address(line, j, directiveIdx, result);
-        }
-    }
-    else if (directives[directiveIdx].AddressingMethodDst[3])
-    {
-        printBinaryRepresentation(3, 2);
-        printBinaryRepresentation(line[j + 1] - 48, 3);
-        p(a, 11, 12, 3);
-        p(a, 8, 10, line[j + 1] - 48);
-        result.isSecond = false;
-    }
-    return result;
-}
-
-
-
-Word codeDirective(const char * line, size_t i, size_t num)
-{
-    a = 0;
-    printf("%s", line);
     printf("0000");
     printf("%d\t", num);
-    Word result;
-    if(!strcmp("stop", str_slice(line, i, i + 4)))
+}
+
+
+
+
+void printFirst(Word word, size_t num)
+{
+    if(word.isFirst)
     {
-        printf("001111000000000000000100");
+        currentWord = 0;
+        printLineNum(num + 1);
+        printBinaryRepresentation(word.firstWord, 24);
+        printf("\n");
+        printHexNum(word.firstWord);
+        output = (int *) realloc(output, num + 1 * sizeof(int));
+        output[num] = word.firstWord;
+    }
+}
+
+void printSecond(Word word, size_t num)
+{
+    if(word.isSecond)
+    {
+//        currentWord = 0;
+//        printLineNum(num + 2);
+//        printBinaryRepresentation(word.secondWord, 24);
+//        printf("\n");
+//        printHexNum(word.secondWord);
+        output = (int *) realloc(output, num + 2 * sizeof(int));
+        output[num + 1] = word.secondWord;
+    }
+}
+
+
+void func()
+{
+    if (currentWord == 14)
+        currentWord = setCurrWordBits(0, 24, 3932164);
+    else
+        currentWord = setCurrWordBits(0, 24, 14680068);
+}
+
+
+Word codeDirective(DirectiveLine line, size_t i)
+{
+    currentWord = 0;
+    printf("%s", line.text);
+    printLineNum(line.address);
+    Word result;
+
+    int directiveIdx = getOpcod(str_slice(line.text,i, i + 3));
+    if (directiveIdx == 14 || (strlen(line.text) >= 4 && !strcmp(str_slice(line.text, i, i + 4), "stop")))
+    {
+        func();
         return result;
     }
-//    printf("%s\n", str_slice(line,i, i + 3));
-    int directiveIdx = getOpcod(str_slice(line,i, i + 3));
-    p(a, 18, 23, directives[directiveIdx].opcode)  ;
-    printBinaryRepresentation(directives[directiveIdx].opcode, 6);
-    size_t j = i + 3;
+    else{
+        setCurrWordBits(18, 23, directives[directiveIdx].opcode);
+        size_t j = i + 3;
 
-    while(line[j] && (line[j] == ' ' || line[j] == '\t'))
-        j++;
+        while(line.text[j] && (line.text[j] == ' ' || line.text[j] == '\t'))
+            j++;
 
-    if(isTwoOperands(line))
-    {
-        if(isValidTwoOperands(directiveIdx))
+        if(isTwoOperands(line.text))
         {
-            result = first_operand(line, j, directiveIdx, num);
-            while(line[j] && !(line[j] == ','))
-                j++;
-            if (j + 1 < strlen(line) && line[j + 1] == ' ')
-                while(line[++j] && (line[j] == ' ' || line[j] == '\t')){}
+            if(isValidTwoOperands(directiveIdx))
+            {
+                result = first_operand(line, j, directiveIdx);
+                while(line.text[j] && !(line.text[j] == ','))
+                    j++;
+                if (j + 1 < strlen(line.text) && line.text[j + 1] == ' ')
+                    while(line.text[++j] && (line.text[j] == ' ' || line.text[j] == '\t')){}
+            }
+            else
+            {
+                printf("error... extra operand");
+            }
         }
         else
-            {
-            printf("error... extra operand");
+        {
+            result.isFirst = false;
+            setCurrWordBits( 13, 17, 0);
         }
+
+        Word result2 = second_operand(line, j, directiveIdx, result);
+        result.isSecond = result2.isSecond;
+        result.secondWord = result2.secondWord;
+        setCurrWordBits(3, 7, directives[directiveIdx].funct);
+        setCurrWordBits(0, 2, 4);
     }
-    else
-    {
-        result.isFirst = false;
-        p(a, 13, 17, 0);
-        printBinaryRepresentation(0, 5);
-    }
-    result = second_operand(line, j, directiveIdx, result, num);
-    printBinaryRepresentation(directives[directiveIdx].funct, 5);
-    printBinaryRepresentation(4, 3);
-    p(a, 3, 7, directives[directiveIdx].funct);
-    p(a, 0, 2, 4);
-    printf("\n");
-//    printf("%x\n", a);
-    if(result.isFirst)
-    {
-        a = 0;
-        printf("0000");
-        printf("%d\t", ++num);
-        printBinaryRepresentation(result.firstWord, 24);
-        printf("\n");
-    }
-    if(result.isSecond)
-    {
-        a = 0;
-        printf("0000");
-        printf("%d\t", ++num);
-        printBinaryRepresentation(result.secondWord, 24);
-        printf("\n");
-    }
+    printBinaryRepresentation(currentWord, 24);
+//    output = (int *) realloc(output, num * sizeof(int));
+    output[line.address - 1] = currentWord;
+//    printf("\n");
+//    printHexNum(currentWord);
+    printFirst(result, line.address);
+    printSecond(result, line.address);
     return result;
 }
 
-void codeLine(const char * line, size_t num)
+void codeLine(DirectiveLine line)
 {
-
     size_t i = 0;
-    while(line[i] && (line[i] == ' ' || line[i] == '\t'))
+    while(line.text[i] && (line.text[i] == ' ' || line.text[i] == '\t'))
         i++;
 
-    if (line[i] == ';')
-        return;
-
-    if (line[i] == '.')
-        return;
-    else if ((i + 3 < strlen(line) && line[i + 3] == ' ' && getOpcode(str_slice(line, i, i + 3)) !=-1)
-             || i + 4 < strlen(line) && !strcmp("stop", str_slice(line, i, i + 4)))
+    if ((i + 3 < strlen(line.text) && line.text[i + 3] == ' ' && getOpcode(str_slice(line.text, i, i + 3)) != -1)
+             || i + 4 < strlen(line.text) && !strcmp("stop", str_slice(line.text, i, i + 4)))
     {
-        codeDirective(line, i, num);
+        codeDirective(line, i);
     }
-//TODO: if needed
-//    else{
-//        if (isLabel(line, i) == -1)
-//            printf("\nError...");
-//        else
-//        {
-//            codeLine(isLabel(line, i), num);
-//        }
-//    }
+    else
+        error(E_SYNTAX, line.lineNum);
 }
+
 
 void codeGuidance(GuidanceLine line)
 {
     printf("0000");
-    printf("%d\t", line.address + ic);
+    printf("%ld\t", line.address + ic);
     printBinaryRepresentation(line.code, 24);
     printf("\n");
-    printf("%x\n", line.code);
+    printHexNum(line.code);
 }
+
 
 void second_iteration(const char * fileName)
 {
+    output = (int*)malloc((dc + ic)*sizeof(int));
     for (int i = 0; i < cnt; ++i)
     {
-        printf("%d: %s\t%d\t%d\t%d\n", i, symbolTable[i].symbolName, symbolTable[i].isInstruction, symbolTable[i].address, symbolTable[i].type);
+        printf("%ld: %s\t%d\t%ld\t%ld\n", i, symbolTable[i].symbolName, symbolTable[i].isInstruction, symbolTable[i].address, symbolTable[i].type);
     }
     for(size_t i = 0; i < numLines; ++i)
-        codeLine(memory[i].text, memory[i].address);
+        codeLine(memory[i]);
     printf("\n");
     for(size_t i = 0; i < numGuidance; ++i)
         codeGuidance(data[i]);
+    free(symbolTable);
+    free(memory);
+    free(data);
+
 }
 

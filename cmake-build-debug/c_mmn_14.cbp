@@ -78,33 +78,6 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/code_func.c">
-			<Option target="c_mmn_14"/>
-		</Unit>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/code_func.h">
-			<Option target="c_mmn_14"/>
-		</Unit>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/first_transition.c">
-			<Option target="c_mmn_14"/>
-		</Unit>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/first_transition.h">
-			<Option target="c_mmn_14"/>
-		</Unit>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/instruction_validation.c">
-			<Option target="c_mmn_14"/>
-		</Unit>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/instruction_validation.h">
-			<Option target="c_mmn_14"/>
-		</Unit>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/main.c">
-			<Option target="c_mmn_14"/>
-		</Unit>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/second_transition.c">
-			<Option target="c_mmn_14"/>
-		</Unit>
-		<Unit filename="/home/linux/Desktop/c_mmn_14/second_transition.h">
-			<Option target="c_mmn_14"/>
-		</Unit>
 		<Unit filename="/home/linux/Desktop/c_mmn_14/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>

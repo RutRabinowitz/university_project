@@ -7,7 +7,8 @@
 const char * instructions_names[15] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc",
                                        "dec", "jmp", "bne", "jsr", "red", "prn", "rts", "stop"};
 
-int instructions_opcodes[15][2] = {
+int instructions_opcodes[15][2] =
+        {
         {0, 0},
         {1, 0},
         {2, 1},

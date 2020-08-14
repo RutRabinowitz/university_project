@@ -9,6 +9,7 @@
 #define LEN 31
 
 void first_iteration(const char * fileName);
+
 typedef enum bool{false = 0, true = 1} bool;
 
 typedef struct Symbol
@@ -19,16 +20,23 @@ typedef struct Symbol
     int type;
 }Symbol;
 
+
+typedef struct EntrySymbol {
+    char name[80];
+}EntrySymbol;
+
 typedef struct DirectiveLine
 {
     char text[80];
     size_t address;
+    size_t lineNum;
 }DirectiveLine;
 
 typedef struct GuidanceLine
 {
     int code;
     size_t address;
+//    size_t lineNum;
 }GuidanceLine;
 
 

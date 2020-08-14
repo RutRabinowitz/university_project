@@ -8,8 +8,9 @@
 #include "code_func.h"
 #include <stdlib.h>
 #include <string.h>
-
-
+#include "guidance_sen.h"
+#include "directive_sen.h"
+#include "read_files.h"
 
 size_t ic = 100;
 size_t dc = 0;
@@ -19,17 +20,14 @@ size_t numLines = 0;
 size_t numGuidance = 0;
 
 
-typedef struct EntrySymbol {
-    char name[80];
-}EntrySymbol;
 
-
-void checkLine(const char * line);
+void checkLine(const char * line, size_t lineNum);
 
 Symbol *symbolTable;
 DirectiveLine *memory;
 GuidanceLine *data;
 EntrySymbol *entrySymbols;
+
 
 
 int isInTable(const char * symbol)
@@ -47,52 +45,6 @@ int isInTable(const char * symbol)
 }
 
 
-char* isLabel(const char * line, size_t i) {
-    size_t j = i;
-    while (line[j] && (line[j] != ':'))
-    {
-        j++;
-    }
-    if(isInTable(str_slice(line, i, j)) != -1)
-        return str_slice(line, j + 1, strlen(line));
-    return NULL;
-}
-
-
-
-void directiveSen(const char * line, size_t i)
-{
-    numLines++;
-    size_t j = i + 3;
-    memory = (DirectiveLine*)realloc(memory, numLines * sizeof(DirectiveLine));
-    strcpy(memory[numLines - 1].text, line);
-    memory[numLines - 1].address = ic;
-    ic++;
-    if(!strcmp("stop", str_slice(line, i, i + 4)))
-        return;
-
-    while(line[j] && (line[j] == ' ' || line[j] == '\t'))
-        j++;
-
-    if (line[j] && !(line[j] == 'r' && j + 1 < strlen(line) && (line[j + 1] >= '1' && line[j + 1] <= '7')))
-        ic++;
-
-    while(line[j] && !(line[j] == ','))
-        j++;
-
-    if (line[j] && line[j] == ',')
-    {
-        j++;
-        while(line[j] && (line[j] == ' ' || line[j] == '\t'))
-            j++;
-
-        if (line[j] && !(line[j] == 'r' && j + 1 < strlen(line) && (line[j + 1] >= '1' && line[j + 1] <= '7')))
-            ic++;
-    }
-}
-
-
-
 
 bool isGuidance(const char* line, size_t i)
 {
@@ -100,108 +52,73 @@ bool isGuidance(const char* line, size_t i)
     return line[i] && line[i] == '.';
 }
 
-void label(const char * line, size_t i) {
+
+void insertSymbolName(const char * name)
+{
+    cnt++;
+    symbolTable = (Symbol *) realloc(symbolTable, cnt * sizeof(Symbol));
+    strcpy(symbolTable[cnt - 1].symbolName, name);
+
+}
+
+void signDirSymbol()
+{
+    symbolTable[cnt - 1].isInstruction = true;
+    symbolTable[cnt - 1].address = ic;
+}
+
+
+void signGuidSymbol()
+{
+    symbolTable[cnt - 1].isInstruction = false;
+    symbolTable[cnt - 1].address = dc;
+}
+
+
+void insertSymbol(const char * line, size_t i, size_t j, size_t lineNum)
+{
+    if (line[j] && line[j] == ':')
+    {
+        insertSymbolName(str_slice(line, i, j));
+        if (!isGuidance(line, j))
+        {
+            signDirSymbol();
+        }
+        else
+        {
+            signGuidSymbol();
+        }
+        symbolTable[cnt - 1].type = 2;
+        checkLine(str_slice(line, j + 1, strlen(line)), lineNum);
+    }
+    else
+        error(E_SYNTAX, lineNum);
+
+}
+
+
+
+void label(const char * line, size_t i, size_t lineNum) {
     size_t j = i;
 
     while (line[j] && (line[j] != ':'))
     {
         j++;
     }
-    if(isInTable(str_slice(line, i, j)) == -1) {
-        if (line[j] && line[j] == ':') {
-            cnt++;
-            symbolTable = (Symbol *) realloc(symbolTable, cnt * sizeof(Symbol));
-            strcpy(symbolTable[cnt - 1].symbolName, str_slice(line, i, j));
-            if (!isGuidance(line, j)) {
-                symbolTable[cnt - 1].isInstruction = true;
-                symbolTable[cnt - 1].address = ic;
-            }
-            else {
-                symbolTable[cnt - 1].isInstruction = false;
-                symbolTable[cnt - 1].address = dc;
-            }
-            symbolTable[cnt - 1].type = 4;
-            checkLine(str_slice(line, j + 1, strlen(line)));
-        }
-    }
-}
-
-
-void guidanceSen(const char * line, size_t i)
-{
-    if (i + 2 < strlen(line))
+    if(isInTable(str_slice(line, i, j)) == -1)
     {
-        char* s = str_slice(line, i + 1, i + 3);
-
-        if (!strcmp(s, "da"))
-        {
-            size_t j = i + 5;
-            printf("%s", line);
-            while(line[j])
-            {
-                size_t k = j;
-                if (line[j] == ',')
-                    j++;
-                while (line[j] && line[j++] != ',') {}
-                printf("%s\n", str_slice(line, k + 1, j));
-//                if (!isNumber(str_slice(line, k + 1, j)))
-//                        printf("error...");
-                numGuidance++;
-                data = (GuidanceLine*)realloc(data, numGuidance * sizeof(GuidanceLine));
-                data[numGuidance - 1].code = atoi(str_slice(line, k, j + 1));
-                data[numGuidance - 1].address = dc;
-                dc++;
-            }
-
-        }
-        else if (!strcmp(s, "st"))
-        {
-            printf("%s", line);
-            size_t j = i + 11;
-            size_t counter = 0;
-            while(line[j] && line[j] != -30)
-            {
-                numGuidance++;
-                data = (GuidanceLine *) realloc(data, numGuidance * sizeof(GuidanceLine));
-                data[numGuidance - 1].code = line[j];
-                data[numGuidance - 1].address = dc;
-                dc++;
-                j++;
-            }
-            numGuidance++;
-            data = (GuidanceLine *) realloc(data, numGuidance * sizeof(GuidanceLine));
-            data[numGuidance - 1].code = '\0';
-            data[numGuidance - 1].address = dc;
-            dc++;
-        }
-
-        else if (!strcmp(s, "en")){
-            numEntries++;
-            entrySymbols = (EntrySymbol*) realloc(entrySymbols, numEntries * sizeof(Symbol));
-            size_t j = i;
-            while(line[j++]){}
-            strcpy(entrySymbols[numEntries - 1].name, str_slice(line, i + 7, j - 2));
-        }
-
-        else if (!strcmp(s, "ex"))
-        {
-            cnt++;
-            symbolTable = (Symbol *) realloc(symbolTable, cnt * sizeof(Symbol));
-            size_t j = i;
-            while(line[j++]){}
-            strcpy(symbolTable[cnt - 1].symbolName, str_slice(line, i + 8, j - 2));
-            symbolTable[cnt - 1].address = 0;
-            symbolTable[cnt - 1].type = 1;
-            symbolTable[cnt - 1].isInstruction = false;
-        }
+        insertSymbol(line, i, j, lineNum);
     }
+    else
+        error(E_SYNTAX, lineNum);
 }
 
 
 
 
-void checkLine(const char * line)
+void checkLine(const char * line, size_t lineNum)
 {
+   
     size_t i = 0;
     while(line[i] && (line[i] == ' ' || line[i] == '\t'))
         i++;
@@ -210,16 +127,17 @@ void checkLine(const char * line)
         return;
 
     if (line[i] == '.')
-        guidanceSen(line, i);
+        guidanceSen(line, i, lineNum);
 
     else if ((i + 3 < strlen(line) && line[i + 3] == ' ' && getOpcode(str_slice(line, i, i + 3)))
              || i + 4 < strlen(line) && !strcmp("stop", str_slice(line, i, i + 4)))
-        directiveSen(line, i);
+        directiveSen(line, i, lineNum);
 
     else
-        label(line, i);
+        label(line, i, lineNum);
 
 }
+
 
 
 void initDataTables()
@@ -230,45 +148,41 @@ void initDataTables()
     entrySymbols = (EntrySymbol*)malloc(sizeof(EntrySymbol));
 }
 
+
 void signEntrySymbols()
 {
     for (int i = 0; i < cnt; ++i)
     {
-        if (!symbolTable[i].isInstruction && symbolTable[i].type != 1){
+        if (!symbolTable[i].isInstruction && symbolTable[i].type != 1)
+        {
             symbolTable[i].address += ic;
         }
-        if(symbolTable[i].type != 1)
-            symbolTable[i].type = 2;
-
-//        for (int j = 0; j < numEntries; ++j)
-//        {
-//            if(!strcmp(entrySymbols[j].name, symbolTable[i].symbolName))
-//                symbolTable[i].type = 2;
-//        }
     }
 }
+
 
 void first_iteration(const char * fileName) {
     FILE * fp;
     char * line = NULL;
     size_t len = 0;
+    size_t lineNum = 0;
     fp = fopen(fileName, "r");
 
-    if (fp == NULL)
+    if (fp == NULL){
         exit(EXIT_FAILURE);
+    }
+
     initDataTables();
     while ((getline(&line, &len, fp)) != -1)
-        checkLine(line);
+    {
+        lineNum++;
+        checkLine(line, lineNum);
+    }
+
 
     fclose(fp);
     if (line)
         free(line);
-
-    printf("%d\n", ic);
-    printf("%d\n", dc);
     signEntrySymbols();
-    for (int i = 0; i < cnt; ++i)
-    {
-        printf("%s\t%d\t%d\t%d\n", symbolTable[i].symbolName, symbolTable[i].isInstruction, symbolTable[i].address, symbolTable[i].type);
-    }
 }
+

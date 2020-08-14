@@ -1,4 +1,15 @@
 /usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/linux/Desktop/c_mmn_14
 -- Configuring done
+CMake Error at CMakeLists.txt:6 (add_executable):
+  Cannot find source file:
+
+    symbol_table.c
+
+  Tried extensions .c .C .c++ .cc .cpp .cxx .m .M .mm .h .hh .h++ .hm .hpp
+  .hxx .in .txx
+
+
+CMake Error: CMake can not determine linker language for target: c_mmn_14
+CMake Error: Cannot determine link language for target "c_mmn_14".
 -- Generating done
 -- Build files have been written to: /home/linux/Desktop/c_mmn_14/cmake-build-debug

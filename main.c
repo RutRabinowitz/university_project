@@ -13,7 +13,6 @@
 
 int main(int argc, char *argv[]) {
     init();
-    printf("%d", directives[3].AddressingMethodDst[0]);
     for (int i = 0; i < argc; i++)
     {
         int len = strlen(argv[i]);
