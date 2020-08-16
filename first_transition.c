@@ -77,17 +77,17 @@ void insertSymbol(const char * line, size_t i, size_t j, size_t lineNum)
 {
     if (line[j] && line[j] == ':')
     {
-        insertSymbolName(str_slice(line, i, j));
-        if (!isGuidance(line, j))
-        {
-            signDirSymbol();
-        }
-        else
-        {
-            signGuidSymbol();
-        }
-        symbolTable[cnt - 1].type = 2;
-        checkLine(str_slice(line, j + 1, strlen(line)), lineNum);
+            insertSymbolName(str_slice(line, i, j));
+            if (!isGuidance(line, j))
+            {
+                signDirSymbol();
+            }
+            else
+            {
+                signGuidSymbol();
+            }
+            symbolTable[cnt - 1].type = 2;
+            checkLine(str_slice(line, j + 1, strlen(line)), lineNum);
     }
     else
         error(E_SYNTAX, lineNum);
@@ -108,7 +108,7 @@ void label(const char * line, size_t i, size_t lineNum) {
         insertSymbol(line, i, j, lineNum);
     }
     else
-        error(E_SYNTAX, lineNum);
+        error(E_REDECLARATION, lineNum);
 }
 
 
@@ -127,7 +127,7 @@ void checkLine(const char * line, size_t lineNum)
     if (line[i] == '.')
         guidanceSen(line, i, lineNum);
 
-    else if ((i + 3 < strlen(line) && line[i + 3] == ' ' && getOpcode(str_slice(line, i, i + 3)))
+    else if ((i + 3 < strlen(line) && line[i + 3] == ' ' && getOpcode(str_slice(line, i, i + 3)) != -1)
              || i + 4 < strlen(line) && !strcmp("stop", str_slice(line, i, i + 4)))
         directiveSen(line, i, lineNum);
 
@@ -167,7 +167,8 @@ void first_iteration(const char * fileName) {
     fp = fopen(fileName, "r");
 
     if (fp == NULL){
-        exit(EXIT_FAILURE);
+        error(E_FILE, 0);
+        return;
     }
 
     initDataTables();

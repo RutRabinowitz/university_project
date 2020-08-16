@@ -28,30 +28,6 @@ int *output;
 
 
 
-void printBinaryRepresentation(int number, size_t j)
-{
-    unsigned int musk = 1 << j - 1;
-    int i;
-
-    for (i = 0; i < j; ++i, musk = musk >> 1)
-    {
-        musk & number? printf("%d", 1):printf("%d", 0);
-    }
-}
-
-
-
-void printHexNum(int word)
-{
-    int musk = 15 << 20;
-
-    for (size_t i = 0; i < 6; i++, musk = musk >> 4)
-    {
-        printf("%x", (word&musk)>>(20 - 4*i));
-    }
-    printf("\n");
-}
-
 int setCurrWordBits(int start, int stop, int number)
 {
     number = number <<  start;
@@ -88,6 +64,8 @@ bool isValidTwoOperands(size_t idx)
     return false;
 }
 
+
+
 bool isTwoOperands(const char * line)
 {
     size_t i, len = strlen(line);
@@ -101,24 +79,14 @@ bool isTwoOperands(const char * line)
 
 
 
-void printLineNum(int num)
-{
-    printf("0000");
-    printf("%d\t", num);
-}
+
 
 
 void printFirst(Word word, size_t num)
 {
     if(word.isFirst)
     {
-        currentWord = 0;
-        printLineNum(num + 1);
-        printBinaryRepresentation(word.firstWord, 24);
-        printf("\n");
-        printHexNum(word.firstWord);
-        output = (int *) realloc(output, num + 1 * sizeof(int));
-        output[num] = word.firstWord;
+        output[num - 99] = word.firstWord;
     }
 }
 
@@ -129,14 +97,9 @@ void printSecond(Word word, size_t num)
     {
         currentWord = 0;
         if (word.isFirst)
-            printLineNum(num + 2);
+            output[num - 98] = word.secondWord;
         else
-            printLineNum(num + 1);
-        printBinaryRepresentation(word.secondWord, 24);
-        printf("\n");
-        printHexNum(word.secondWord);
-        output = (int *) realloc(output, num + 2 * sizeof(int));
-        output[num + 1] = word.secondWord;
+            output[num - 99] = word.secondWord;
     }
 }
 
@@ -153,8 +116,6 @@ void func()
 Word codeDirective(DirectiveLine line, size_t i)
 {
     currentWord = 0;
-    printf("%s", line.text);
-    printLineNum(line.address);
     Word result;
 
     int directiveIdx = getOpcode(str_slice(line.text,i, i + 3));
@@ -174,15 +135,19 @@ Word codeDirective(DirectiveLine line, size_t i)
         {
             if(isValidTwoOperands(directiveIdx))
             {
+
                 result = first_operand(line, j, directiveIdx);
                 while(line.text[j] && !(line.text[j] == ','))
                     j++;
                 if (j + 1 < strlen(line.text) && line.text[j + 1] == ' ')
                     while(line.text[++j] && (line.text[j] == ' ' || line.text[j] == '\t')){}
+                else
+                    error(E_SYNTAX, line.lineNum);
             }
             else
             {
                 error(E_SECOND_OPERAND, line.lineNum);
+                return result;
             }
         }
         else
@@ -197,11 +162,7 @@ Word codeDirective(DirectiveLine line, size_t i)
         setCurrWordBits(3, 7, directives[directiveIdx].funct);
         setCurrWordBits(0, 2, 4);
     }
-    printBinaryRepresentation(currentWord, 24);
-//    output = (int *) realloc(output, num * sizeof(int));
-    output[line.address - 1] = currentWord;
-    printf("\n");
-    printHexNum(currentWord);
+    output[line.address - 100] = currentWord;
     printFirst(result, line.address);
     printSecond(result, line.address);
     return result;
@@ -225,17 +186,20 @@ void codeLine(DirectiveLine line)
 
 void codeGuidance(GuidanceLine line)
 {
-    printf("0000");
-    printf("%ld\t", line.address + ic);
-    printBinaryRepresentation(line.code, 24);
-    printf("\n");
-    printHexNum(line.code);
+    output[line.address + ic - 100] = line.code;
 }
 
 
-void second_iteration(const char * fileName)
+void freeTables()
 {
-    output = (int*)malloc((dc + ic)*sizeof(int));
+    free(symbolTable);
+    free(memory);
+    free(data);
+}
+
+int* second_iteration(const char * fileName)
+{
+    output = (int*)malloc((dc + ic - 100)*sizeof(int));
     for (int i = 0; i < cnt; ++i)
     {
         printf("%d: %s\t%d\t%ld\t%d\n", i, symbolTable[i].symbolName, symbolTable[i].isInstruction, symbolTable[i].address, symbolTable[i].type);
@@ -245,9 +209,7 @@ void second_iteration(const char * fileName)
     printf("\n");
     for(size_t i = 0; i < numGuidance; ++i)
         codeGuidance(data[i]);
-    free(symbolTable);
-    free(memory);
-    free(data);
-
+    freeTables();
+    return output;
 }
 

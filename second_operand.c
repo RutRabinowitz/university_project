@@ -47,7 +47,10 @@ static Word direct_address(DirectiveLine line, size_t j, size_t directiveIdx, Wo
     while (line.text[j] && line.text[j] != ' ' && line.text[j] != '\t' && line.text[j] != '\n' && line.text[j++] != ',') {}
     int idx = isInTable(str_slice(line.text, k, j));
     if (idx == -1)
-        error(E_SECOND_OPERAND, line.lineNum);
+    {
+        error(E_SYMBOL, line.lineNum);
+    }
+
     else if (directives[directiveIdx].AddressingMethodDst[1])
     {
         setCurrWordBits(11, 12, 1);
@@ -94,5 +97,7 @@ Word second_operand(DirectiveLine line, size_t j, size_t directiveIdx, Word resu
         setCurrWordBits(8, 10, line.text[j + 1] - 48);
         result.isSecond = false;
     }
+    else
+        error(E_SECOND_OPERAND, line.lineNum);
     return result;
 }

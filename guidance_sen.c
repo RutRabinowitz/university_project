@@ -9,6 +9,7 @@
 #include "first_transition.h"
 #include "read_files.h"
 
+
 extern Symbol *symbolTable;
 extern DirectiveLine *memory;
 extern GuidanceLine *data;

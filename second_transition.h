@@ -9,6 +9,6 @@
 
 bool isNumber(const char * str);
 int setCurrWordBits(int start, int stop, int number);
-void second_iteration(const char * fileName);
+int* second_iteration(const char * fileName);
 
 #endif //C_MMN_14_SECOND_TRANSITION_H

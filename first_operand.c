@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 extern Directive *directive;
 extern Symbol *symbolTable;
 extern int cnt;
@@ -31,12 +32,14 @@ static Word direct_address(DirectiveLine line, size_t j, size_t directiveIdx)
     j--;
     int idx = isInTable(str_slice(line.text, k, j));
     if (idx == -1)
-        error(E_FIRST_OPERAND, line.lineNum);
+        error(E_SYMBOL, line.lineNum);
     else if (directives[directiveIdx].AddressingMethodSrc[1]) {
         setCurrWordBits(16, 17, 1);
         setCurrWordBits(13, 15, 0);
         result = setFirstWord(true, (symbolTable[idx].address << 3)|symbolTable[idx].type);
     }
+    else
+        error(E_FIRST_OPERAND, line.lineNum);
     return result;
 }
 
@@ -57,6 +60,8 @@ static Word relative_address(DirectiveLine line, size_t j, size_t directiveIdx)
         setCurrWordBits(13, 15, 0);
         result = setFirstWord(true, (symbolTable[idx].address - line.address << 3)|4);
     }
+    else
+        error(E_FIRST_OPERAND, line.lineNum);
     return result;
 
 }
@@ -76,6 +81,8 @@ static Word immediate_address(DirectiveLine line, size_t j, size_t directiveIdx)
         setCurrWordBits(13, 15, 0);
         result = setFirstWord(true, (atoi(str_slice(line.text, k + 1, j)) << 3)|4);
     }
+    else
+        error(E_FIRST_OPERAND, line.lineNum);
     return result;
 }
 
@@ -103,6 +110,8 @@ Word first_operand(DirectiveLine line, size_t j, size_t directiveIdx)
         setCurrWordBits(13, 15, line.text[j + 1] - 48);
         result = setFirstWord(0, -1);
     }
+    else
+        error(E_FIRST_OPERAND, line.lineNum);
     return result;
 }
 

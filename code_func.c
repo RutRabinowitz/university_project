@@ -134,7 +134,8 @@ void init()
     }
 }
 
-int getOpcod(const char *instruction_name)
+
+int getOpcode(const char *instruction_name)
 {
     int i;
     for(i = 0; i < 15; ++i)
@@ -145,20 +146,4 @@ int getOpcod(const char *instruction_name)
         }
     }
     return -1;
-}
-
-
-int getOpcode(const char *instruction_name)
-{
-    int i;
-    for(i = 0; i < 15; ++i)
-    {
-        if(!strcmp(instruction_name, instructions_names[i]))
-        {
-            return 1;
-//            return instructions_opcodes[i];
-        }
-    }
-    return 0;
-//    return NULL;
 }

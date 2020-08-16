@@ -7,6 +7,7 @@
 #include <string.h>
 #include "first_transition.h"
 #include "code_func.h"
+#include "read_files.h"
 
 extern DirectiveLine *memory;
 extern size_t numLines;
@@ -49,6 +50,17 @@ void directiveSen(const char * line, size_t i, size_t lineNum)
             j++;
 
         if (isNotRegister(line, j))
+        {
             ic++;
+            while(line[j] && (line[j] != 10 && line[j] != 9 && line[j] != 32))
+                j++;
+            j++;
+        }
+        else
+            j += 3;
+    }
+    if(line[j] && (line[j] != 10 && line[j] != 9 && line[j] != 32))
+    {
+        error(E_SYNTAX, lineNum);
     }
 }
