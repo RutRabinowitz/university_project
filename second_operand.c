@@ -37,6 +37,8 @@ static Word relative_address(DirectiveLine line, size_t j, size_t directiveIdx, 
         setCurrWordBits(8, 10, 0);
         result = setSecondWord(true, (symbolTable[idx].address - line.address << 3)|4);
     }
+    else
+        error(E_SECOND_OPERAND, line.lineNum);
     return result;
 }
 
@@ -58,6 +60,8 @@ static Word direct_address(DirectiveLine line, size_t j, size_t directiveIdx, Wo
         result = setSecondWord(true, (symbolTable[idx].address << 3)|symbolTable[idx].type);
 
     }
+    else
+        error(E_SECOND_OPERAND, line.lineNum);
     return result;
 }
 
@@ -68,10 +72,13 @@ static Word immediate_address(DirectiveLine line, size_t j, size_t directiveIdx,
     while (line.text[j] && line.text[j] != ' ' && line.text[j] != '\t' && line.text[j] != '\n' && line.text[j++] != ',') {}
     if (!isNumber(str_slice(line.text, k + 1, j)))
         error(E_SECOND_OPERAND, line.lineNum);
-    else if (directives[directiveIdx].AddressingMethodDst[0]) {
+    else if (directives[directiveIdx].AddressingMethodDst[0])
+    {
         setCurrWordBits(8, 12, 0);
         result = setSecondWord(true, (atoi(str_slice(line.text, k + 1, j)) << 3)|4);
     }
+    else
+        error(E_SECOND_OPERAND, line.lineNum);
     return result;
 }
 

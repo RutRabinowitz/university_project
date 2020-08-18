@@ -1,6 +1,1 @@
-add r1, LIST 2
-cmp r1, r2
-;ads #2, r1
-jmp #4, LIST 54w
-;LIST: .data 1
-LIST: .string "da" 5
+.data   3, 4, 5

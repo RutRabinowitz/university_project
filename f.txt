@@ -1,0 +1,3 @@
+addr1  , r4
+HELLO: bne &XYZ 
+XYZ: .data 9

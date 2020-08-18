@@ -31,14 +31,14 @@ void error(Error err, size_t numLine)
     printError(err, numLine);
 }
 
-void printLineNum(int num)
+void printLineNum(int num, FILE *fp)
 {
-    printf("0000");
-    printf("%d\t", num);
+    fprintf(fp,"0000");
+    fprintf(fp,"%d\t", num);
 }
 
 
-void printBinaryRepresentation(int number, size_t j)
+void printBinaryRepresentation(int number, size_t j, FILE *fp)
 {
     unsigned int musk = 1 << j - 1;
     int i;
@@ -51,24 +51,26 @@ void printBinaryRepresentation(int number, size_t j)
 
 
 
-void printHexNum(int word)
+void printHexNum(int word, FILE *fp)
 {
     int musk = 15 << 20;
 
     for (size_t i = 0; i < 6; i++, musk = musk >> 4)
     {
-        printf("%x", (word&musk)>>(20 - 4*i));
+        fprintf(fp,"%x", (word&musk)>>(20 - 4*i));
     }
-    printf("\n");
+    fprintf(fp,"\n");
 }
 
 void printToFile(int * output)
 {
+    FILE *fp = fopen("output.txt", "a");
+    fprintf(fp, "     %ld\t%ld\n", ic - 100, dc);
     for(int i = 0; i < (ic + dc - 100); i++)
     {
-        printLineNum(i + 100);
-        printHexNum(output[i]);
-        printBinaryRepresentation(output[i], 24);
+        printLineNum(i + 100, fp);
+        printHexNum(output[i], fp);
+        printBinaryRepresentation(output[i], 24, fp);
         printf("\n");
     }
 }

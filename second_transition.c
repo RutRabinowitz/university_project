@@ -37,21 +37,6 @@ int setCurrWordBits(int start, int stop, int number)
 }
 
 
-bool isNumber(const char * str)
-{
-    int i, len = strlen(str);
-    bool flag = true;
-    if (str && str[0] == '0')
-        flag = false;
-    for(i = 0; i < len && flag; i++)
-    {
-        if(!(str[i] >= '0' && str[i] <= '9' || (i == 0 && (str[i] == '-' || str[i] == '+'))))
-            flag = false;
-    }
-    return flag;
-}
-
-
 
 bool isValidTwoOperands(size_t idx)
 {
@@ -146,7 +131,7 @@ Word codeDirective(DirectiveLine line, size_t i)
             }
             else
             {
-                error(E_SECOND_OPERAND, line.lineNum);
+                error(E_EXTRA_OPERAND, line.lineNum);
                 return result;
             }
         }
