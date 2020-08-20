@@ -1,30 +1,33 @@
-//
-// Created by linux on 8/11/20.
-//
 
-//#include "guidance_sen.h"
 #include <stdlib.h>
 #include <string.h>
 #include "code_func.h"
 #include "first_transition.h"
 #include "read_files.h"
 
+#define SPC 32
+#define TAB 9
+#define NEW_LINE 10
 
+
+/*----------------Defining global variables of the system----------------*/
 
 extern Symbol *symbolTable;
 extern DirectiveLine *memory;
 extern GuidanceLine *data;
 extern EntrySymbol *entrySymbols;
 
-
 extern size_t ic;
 extern size_t dc;
-extern size_t cnt;
+extern size_t symbolNum;
 extern size_t numEntries;
 extern size_t numLines;
 extern size_t numGuidance;
 
 
+/* ------------------- Auxiliary functions ------------------- */
+
+/* The function gets a string and checks if it represents an integer (returns a Boolean value).*/
 bool isNumber(const char * str)
 {
     int i, len = strlen(str);
@@ -33,26 +36,29 @@ bool isNumber(const char * str)
         flag = false;
     for(i = 0; i < len && flag; i++)
     {
-        if(!(str[i] >= '0' && str[i] <= '9' || (i == 0 && (str[i] == '-' || str[i] == '+'))))
+        if(!((str[i] >= '0' && str[i] <= '9')  || (i == 0 && (str[i] == '-' || str[i] == '+'))))
             flag = false;
     }
     return flag;
 }
 
 
-void checkSyntaxErrors(const char * line, size_t i, size_t lineNum)
+/*The function takes a line and an index and checks if from the index onwards
+  there is a character that is not a new tab / space / line.
+  This is to make sure that there are no words / characters later in the line illegally.*/
+static void checkSyntaxErrors(const char * line, size_t i, size_t lineNum)
 {
-    while(line[i] && (line[i] == 10 || line[i] == 9 ||line[i] == 32))
+    while(line[i] && (line[i] == NEW_LINE || line[i] == TAB ||line[i] == SPC))
     {
         i++;
     }
-//    printf("hey! %c\n", line[i]);
-    if(line[i] && !(line[i] == 10 || line[i] == 9 ||line[i] == 32))
+    if(line[i] && !(line[i] == NEW_LINE || line[i] == TAB ||line[i] == SPC))
         error(E_SYNTAX, lineNum);
 }
 
 
-void insertData(int c)
+/*The function gets a data to insert into the data table. The function enters the table.*/
+static void insertData(int c)
 {
     numGuidance++;
     data = (GuidanceLine *) realloc(data, numGuidance * sizeof(GuidanceLine));
@@ -61,47 +67,47 @@ void insertData(int c)
     dc++;
 }
 
-
-void dataGuidance(const char * line, size_t i, size_t lineNum)
+/*The function takes a string that is either an '.data' guidance sentence or invalid.
+  It checks whether the sentence is indeed an 'data type guidance.
+  If so - it inserts it into the data table and updates the dc. If not, it makes an error.*/
+static void dataGuidance(const char * line, size_t i, size_t lineNum)
 {
+    size_t j = i + 5;
+    size_t k;
     if(strlen(line) < i + 7 || strcmp("data ", str_slice(line, i + 1, i + 6)))
     {
         error(E_SYNTAX, lineNum);
         return;
     }
-
-    size_t j = i + 5;
     while (line[j])
     {
-        size_t k = j;
-        if (line[j] == ',')
-            j++;
-        while (line[j] && line[j++] != ',') {}
+        
+        while (line[j] && (line[j] == NEW_LINE || line[j] == SPC || line[j] == TAB)){j++;}
+        k = j;
+        while (line[j] && line[j++] != ','){}
 
-        if(line[k] != 32 && line[k] != 10)
+        if ((line[k - 1] == SPC || line[k - 1] == NEW_LINE || line[k - 1] == TAB) && (j - 1 > k && isNumber(str_slice(line, k, j - 1))))
         {
-            error(E_SYNTAX, lineNum);
-        }
-        printf("%s\n", str_slice(line, k + 1, j - 1));
-        if (j - 1 > k + 1 && isNumber(str_slice(line, k + 1, j - 1)))
-        {
-            insertData(atoi(str_slice(line, k + 1, j - 1)));
+            insertData(atoi(str_slice(line, k, j - 1)));
         }
         else
+        {
             error(E_SYNTAX, lineNum);
+            return;
+        }
     }
-    if(line[j] == ',')
-        error(E_SYNTAX, lineNum);
+    checkSyntaxErrors(line, j, lineNum);
 }
 
 
-
-
-void stringGuidance(const char * line, size_t i, size_t lineNum)
+/*The function takes a string that is either an '.string' guidance sentence or invalid.
+  It checks whether the sentence is indeed an '.string' type guidance.
+  If so - it inserts into the data table and updates the dc. If not, it makes an error.*/
+static void stringGuidance(const char * line, size_t i, size_t lineNum)
 {
     size_t j = i + 11;
 
-    if(strlen(line) < i + 10 || strcmp("string \"", str_slice(line, i + 1, i + 9)))
+    if(strlen(line) < i + NEW_LINE || strcmp("string \"", str_slice(line, i + 1, i + TAB)))
     {
         error(E_SYNTAX, lineNum);
         return;
@@ -115,47 +121,79 @@ void stringGuidance(const char * line, size_t i, size_t lineNum)
     if(line[j - 2] == -30)
         error(E_SYNTAX, lineNum);
     insertData('\0');
+    /*make sure that there are no words / characters later in the line illegally.*/
     checkSyntaxErrors(line, j - 1, lineNum);
 }
 
 
-
-void entryGuidance(const char * line, size_t i, size_t lineNum)
+/*The function takes a string that is either an '.entry' guidance sentence or invalid.
+  It checks whether the sentence is indeed an entry type guidance.
+  If so - it inserts it into the entries table. If not, it makes an error.*/
+static void entryGuidance(const char * line, size_t i, size_t lineNum)
 {
-    if(strlen(line) < i + 9 || strcmp("entry ", str_slice(line, i + 1, i + 7)))
+    size_t j;
+
+    if(strlen(line) < i + TAB || strcmp("entry ", str_slice(line, i + 1, i + 7)))
     {
         error(E_SYNTAX, lineNum);
         return;
     }
+    i += 7;
+    while (line[i] && (line[i] == NEW_LINE || line[i] == SPC || line[i] == TAB)){i++;}
+    j = i;
+    while(line[j] && !(line[j] == NEW_LINE || line[j] == SPC || line[j] == TAB)){j++;}
 
-    numEntries++;
-    entrySymbols = (EntrySymbol*) realloc(entrySymbols, numEntries * sizeof(Symbol));
-    size_t j = i;
-    while(line[j++]){}
-
-    if (i + 7 < j - 2)
-        strcpy(entrySymbols[numEntries - 1].name, str_slice(line, i + 7, j - 2));
-    checkSyntaxErrors(line, j - 1, lineNum);
+    if (i < j)
+    {
+        numEntries++;
+        entrySymbols = (EntrySymbol*) realloc(entrySymbols, numEntries * sizeof(Symbol));
+        strcpy(entrySymbols[numEntries - 1].name, str_slice(line, i, j));
+    }
+    /*make sure that there are no words / characters later in the line illegally.*/
+    checkSyntaxErrors(line, j, lineNum);
 }
 
 
-
-void externalGuidance(const char * line, size_t i, size_t lineNum)
+/*The function takes a string that is either an external guidance sentence or invalid.
+  It checks whether the sentence is indeed an external type guidance.
+  If so - it inserts it into the symbol table. If not, it makes an error.*/
+static void externalGuidance(const char * line, size_t i, size_t lineNum)
 {
-    cnt++;
-    symbolTable = (Symbol *) realloc(symbolTable, cnt * sizeof(Symbol));
-    size_t j = i;
-    while(line[j++]){}
-    strcpy(symbolTable[cnt - 1].symbolName, str_slice(line, i + 8, j - 2));
-    symbolTable[cnt - 1].address = 0;
-    symbolTable[cnt - 1].type = 1;
-    symbolTable[cnt - 1].isInstruction = false;
-    checkSyntaxErrors(line, j - 1, lineNum);
+    size_t j;
+    if(strlen(line) < i + NEW_LINE || strcmp("extern ", str_slice(line, i + 1, i + 8)))
+    {
+        error(E_SYNTAX, lineNum);
+        return;
+    }
+    i += 8;
+    while (line[i] && (line[i] == NEW_LINE || line[i] == SPC || line[i] == TAB)){i++;}
+    j = i;
+    while(line[j] && !(line[j] == NEW_LINE || line[j] == SPC || line[j] == TAB)){j++;}
+
+    if (j > i)
+    {
+        symbolNum++;
+        symbolTable = (Symbol *) realloc(symbolTable, symbolNum * sizeof(Symbol));
+        strcpy(symbolTable[symbolNum - 1].symbolName, str_slice(line, i, j));
+        symbolTable[symbolNum - 1].address = 0;
+        symbolTable[symbolNum - 1].type = 1;
+        symbolTable[symbolNum - 1].isInstruction = false;
+    }
+    else
+    {
+        error(E_SYNTAX, lineNum);
+        return;
+    }
+    /*make sure that there are no words / characters later in the line illegally.*/
+    checkSyntaxErrors(line, j, lineNum);
 }
 
 
 
+/* ------------ The main function in the file ------------ */
 
+/*The function takes a line that is either a guidance sentence,
+ or that is invalid. The function checks if it is valid and updates the dc and the data accordingly. */
 void guidanceSen(const char * line, size_t i, size_t lineNum)
 {
     if (i + 2 < strlen(line))

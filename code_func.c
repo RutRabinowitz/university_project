@@ -1,10 +1,8 @@
-//
-// Created by linux on 7/20/20.
-//
-
 #include "code_func.h"
 #include <string.h>
 #include <stdlib.h>
+
+#define NUM_DIR 16
 
 
 /**
@@ -13,40 +11,33 @@
  */
 char * str_slice(const char str[], int slice_from, int slice_to)
 {
-    // if a string is empty, returns nothing
-    if (str[0] == '\0')
-        return NULL;
-
     char *buffer;
     size_t str_len, buffer_len;
 
-    // for negative indexes "slice_from" must be less "slice_to"
+    if (str[0] == '\0')
+        return NULL;
+
     if (slice_to < 0 && slice_from < slice_to) {
         str_len = strlen(str);
 
-        // if "slice_to" goes beyond permissible limits
         if (abs(slice_to) > str_len - 1)
             return NULL;
 
-        // if "slice_from" goes beyond permissible limits
         if (abs(slice_from) > str_len)
             slice_from = (-1) * str_len;
 
         buffer_len = slice_to - slice_from;
         str += (str_len + slice_from);
 
-        // for positive indexes "slice_from" must be more "slice_to"
     } else if (slice_from >= 0 && slice_to > slice_from) {
         str_len = strlen(str);
 
-        // if "slice_from" goes beyond permissible limits
         if (slice_from > str_len - 1)
             return NULL;
 
         buffer_len = slice_to - slice_from;
         str += slice_from;
 
-        // otherwise, returns NULL
     } else
         return NULL;
 
@@ -56,10 +47,10 @@ char * str_slice(const char str[], int slice_from, int slice_to)
 }
 
 
-char * instructions_names[16] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc",
+char * instructions_names[NUM_DIR] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc",
                                        "dec", "jmp", "bne", "jsr", "red", "prn", "rts", "stop"};
 
-int instructions_opcodes[16][2] =
+int instructions_opcodes[NUM_DIR][2] =
         {
         {0, 0},
         {1, 0},
@@ -79,7 +70,7 @@ int instructions_opcodes[16][2] =
         {15, 0}
 };
 
-int addressingMethodSrc[16][4] = {
+int addressingMethodSrc[NUM_DIR][ADDRESS_MTD_NUM] = {
         {1, 1, 0, 1},
         {1, 1, 0, 1},
         {1, 1, 0, 1},
@@ -98,7 +89,7 @@ int addressingMethodSrc[16][4] = {
         {0, 0, 0, 0}
 };
 
-int addressingMethodDst[16][4] = {
+int addressingMethodDst[NUM_DIR][ADDRESS_MTD_NUM] = {
         {0, 1, 0, 1},
         {1, 1, 0, 1},
         {0, 1, 0, 1},
@@ -117,16 +108,17 @@ int addressingMethodDst[16][4] = {
         {0, 0, 0, 0}
 };
 
+
 void init()
 {
     size_t i;
     size_t j;
-    for(i = 0; i < 15; i++)
+    for(i = 0; i < NUM_DIR; i++)
     {
         directives[i].opcode = instructions_opcodes[i][0];
         directives[i].funct = instructions_opcodes[i][1];
         directives[i].name = instructions_names[i];
-        for (j = 0; j < 4; ++j)
+        for (j = 0; j < ADDRESS_MTD_NUM; ++j)
         {
             directives[i].AddressingMethodSrc[j] = addressingMethodSrc[i][j];
             directives[i].AddressingMethodDst[j] = addressingMethodDst[i][j];
@@ -138,7 +130,7 @@ void init()
 int getOpcode(const char *instruction_name)
 {
     int i;
-    for(i = 0; i < 15; ++i)
+    for(i = 0; i < NUM_DIR; ++i)
     {
         if(!strcmp(instruction_name, instructions_names[i]))
         {

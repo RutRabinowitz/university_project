@@ -1,6 +1,3 @@
-//
-// Created by linux on 8/14/20.
-//
 
 #include "read_files.h"
 #include "first_transition.h"
@@ -9,18 +6,29 @@
 #include <string.h>
 #include <stdlib.h>
 
+
 bool isValidFile;
 extern size_t ic;
 extern size_t dc;
-char *fileName2;
+char *fileName;
+
+extern EntrySymbol *entrySymbols;
+extern size_t numEntries;
+extern Symbol *symbolTable;
+
+extern EntrySymbol* externs;
+extern size_t numExterns;
 
 void printError(Error err, size_t numLine)
 {
-    char * errorMsg[7] = {"invalid syntax", "Illegal addressing method for the first operand",
+    char * errorMsg[7] = {"Invalid syntax", "Illegal addressing method for the first operand",
                           "Illegal addressing method for the second operand",
-                          "no such symbol", "file does not exist", "redeclaration of symbol",
-                          "too many operands"};
-    printf("error in file %s, line %ld: %s\n", fileName2, numLine, errorMsg[err]);
+                          "No such symbol", "file does not exist", "Redeclaration of symbol",
+                          "Too many operands"};
+    if (err == 4)
+        printf("%s: %s\n", fileName, errorMsg[err]);
+    else
+        printf("file %s: %ld: %s\n", fileName, numLine, errorMsg[err]);
 }
 
 
@@ -40,7 +48,7 @@ void printLineNum(int num, FILE *fp)
 
 void printBinaryRepresentation(int number, size_t j, FILE *fp)
 {
-    unsigned int musk = 1 << j - 1;
+    unsigned int musk = 1 << (j - 1);
     int i;
 
     for (i = 0; i < j; ++i, musk = musk >> 1)
@@ -54,46 +62,104 @@ void printBinaryRepresentation(int number, size_t j, FILE *fp)
 void printHexNum(int word, FILE *fp)
 {
     int musk = 15 << 20;
-
-    for (size_t i = 0; i < 6; i++, musk = musk >> 4)
+    size_t i;
+    for(i = 0; i < 6; i++, musk = musk >> 4)
     {
         fprintf(fp,"%x", (word&musk)>>(20 - 4*i));
     }
     fprintf(fp,"\n");
 }
 
+
 void printToFile(int * output)
 {
-    FILE *fp = fopen("output.txt", "a");
-    fprintf(fp, "     %ld\t%ld\n", ic - 100, dc);
-    for(int i = 0; i < (ic + dc - 100); i++)
+    FILE *fp;
+    size_t i;
+    char *fileName2 = (char*)malloc(sizeof(char)*(strlen(fileName) + 1));
+    strcpy(fileName2, fileName);
+    fp = fopen(strcat(fileName2, ".ob"), "w");
+    fprintf(fp, "%7ld\t%ld\n", ic - START, dc);
+    for(i = 0; i < (ic + dc - START); i++)
     {
-        printLineNum(i + 100, fp);
+        printLineNum(i + START, fp);
         printHexNum(output[i], fp);
-        printBinaryRepresentation(output[i], 24, fp);
-        printf("\n");
+    }
+    free(fileName2);
+}
+
+
+void printEntryFile()
+{
+    FILE *fp;
+    char *fileName2 = (char*)malloc(sizeof(char)*(strlen(fileName) + 1));
+    strcpy(fileName2, fileName);
+    fp = fopen(strcat(fileName2, ".ent"), "w");
+    size_t i;
+    for(i = 0; i < numEntries; i++)
+    {
+        fprintf(fp,"%s\t", entrySymbols[i].name);
+        fprintf(fp,"%07ld", symbolTable[isInTable(entrySymbols[i].name)].address);
+        fprintf(fp,"\n");
+    }
+    free(fileName2);
+}
+
+
+void printExtFile()
+{
+    size_t i;
+    FILE *fp;
+    char *fileName2 = (char*)malloc(sizeof(char)*(strlen(fileName) + 1));
+    strcpy(fileName2, fileName);
+    fp = fopen(strcat(fileName2, ".ext"), "w");
+    for(i = 0; i < numExterns; i++)
+    {
+        fprintf(fp, "%s\t", externs[i].name);
+        fprintf(fp, "%07ld", externs[i].numLine + START);
+        fprintf(fp, "\n");
+    }
+    free(fileName2);
+}
+
+
+void freeTable()
+{
+    free(externs);
+    free(entrySymbols);
+    free(symbolTable);
+}
+
+
+void printFilesIfValid(int *output)
+{
+    if(isValidFile)
+    {
+        printToFile(output);
+        printEntryFile();
+        printExtFile();
     }
 }
 
 
-
-void read_files(int argc, char *argv[])
+void readFiles(int argc, char *argv[])
 {
-    for (int i = 0; i < argc; i++)
+    size_t i;
+    int * output;
+
+    for (i = 1; i < argc; i++)
     {
-        int len = strlen(argv[i]);
-        const char *last_three = &argv[i][len - 3];
-        if (!strcmp(last_three, ".as"))
-        {
-            fileName2 = argv[i];
-            char *fileName = str_slice(argv[i], 0, len - 2);
-            fileName = strcat(fileName, "txt");
-            isValidFile = true;
-            first_iteration(fileName);
-            int * output = second_iteration(fileName);
-            if(isValidFile)
-                printToFile(output);
-            free(output);
-        }
+        char* file = (char*)malloc(sizeof(char)*strlen(argv[i] + 1));
+        fileName = (char*)malloc(sizeof(char)*strlen(argv[i] + 1));
+        strcpy(file, argv[i]);
+        strcpy(fileName, argv[i]);
+        strcat(file, ".as");
+        isValidFile = true;
+        firstIteration(file);
+        output = secondIteration();
+        printFilesIfValid(output);
+        freeTable();
+        free(output);
+        free(file);
+        free(fileName);
     }
 }
