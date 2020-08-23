@@ -4,7 +4,7 @@
 #include "first_transition.h"
 
 
-/* The function gets a directive sentence that has a destination operand,
+/* The function takes a directive sentence that has a destination operand,
  checks what the destination operand is and what its addressing method is and sets the appropriate bits.*/
 Word dstOperand(DirectiveLine line, size_t j, size_t directiveIdx, Word result);
 

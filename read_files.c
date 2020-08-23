@@ -1,8 +1,8 @@
 
-#include "read_files.h"
+#include "read_write_files.h"
 #include "first_transition.h"
 #include "second_transition.h"
-#include "code_func.h"
+#include "directives_table.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -11,15 +11,19 @@ bool isValidFile;
 extern size_t ic;
 extern size_t dc;
 char *fileName;
-
-extern EntrySymbol *entrySymbols;
 extern size_t numEntries;
+
+extern ExternSymbol *entrySymbols;
 extern Symbol *symbolTable;
 
-extern EntrySymbol* externs;
+extern ExternSymbol* externs;
 extern size_t numExterns;
 
-void printError(Error err, size_t numLine)
+
+/* ----------- Auxiliary functions ----------- */
+
+/* The function takes an error type and line number, and prints an appropriate message. */
+static void printError(Error err, size_t numLine)
 {
     char * errorMsg[7] = {"Invalid syntax", "Illegal addressing method for the first operand",
                           "Illegal addressing method for the second operand",
@@ -28,25 +32,19 @@ void printError(Error err, size_t numLine)
     if (err == 4)
         printf("%s: %s\n", fileName, errorMsg[err]);
     else
-        printf("file %s: %ld: %s\n", fileName, numLine, errorMsg[err]);
+        printf("file %s: %ld: error: %s\n", fileName, numLine, errorMsg[err]);
 }
 
-
-
-void error(Error err, size_t numLine)
+/* The function gets a pointer to file and a number and prints appropriately. */
+static void printLineNum(int num, FILE *fp)
 {
-    isValidFile = false;
-    printError(err, numLine);
+    fprintf(fp,"%07d\t", num);
 }
 
-void printLineNum(int num, FILE *fp)
-{
-    fprintf(fp,"0000");
-    fprintf(fp,"%d\t", num);
-}
-
-
-void printBinaryRepresentation(int number, size_t j, FILE *fp)
+/* Function for development purposes only!
+   The function takes an integer and a number of bits,
+   and prints the number in binary representation as the number of bits.
+static void printBinaryRepresentation(int number, size_t j)
 {
     unsigned int musk = 1 << (j - 1);
     int i;
@@ -55,11 +53,12 @@ void printBinaryRepresentation(int number, size_t j, FILE *fp)
     {
         musk & number? printf("%d", 1):printf("%d", 0);
     }
-}
+}*/
 
 
-
-void printHexNum(int word, FILE *fp)
+/* The function takes an integer and pointer to a file,
+   and prints the number in the hexadecimal representation on a 24-bit basis. */
+static void printHexNum(int word, FILE *fp)
 {
     int musk = 15 << 20;
     size_t i;
@@ -71,81 +70,96 @@ void printHexNum(int word, FILE *fp)
 }
 
 
-void printToFile(int * output)
+/* The function takes a string of an extension of a file
+ * and creates a file named as the input file with the extension it gets.
+ * It returns a pointer to the file. */
+static FILE *openFile(const char * extension)
 {
     FILE *fp;
+    char *newFile = (char*)malloc(sizeof(char)*(strlen(fileName) + 1));
+    strcpy(newFile, fileName);
+    fp = fopen(strcat(newFile, extension), "w");
+    free(newFile);
+    return fp;
+}
+
+
+/* The function takes the output, in an array of integers.
+ * It prints the output to the ob file. */
+static void printToFile(int * output)
+{
+    FILE *fp = openFile(".ob");
     size_t i;
-    char *fileName2 = (char*)malloc(sizeof(char)*(strlen(fileName) + 1));
-    strcpy(fileName2, fileName);
-    fp = fopen(strcat(fileName2, ".ob"), "w");
     fprintf(fp, "%7ld\t%ld\n", ic - START, dc);
+
     for(i = 0; i < (ic + dc - START); i++)
     {
         printLineNum(i + START, fp);
         printHexNum(output[i], fp);
     }
-    free(fileName2);
 }
 
 
-void printEntryFile()
+/*The function creates a file with an ent extension and prints the '.entry' symbols and the number of the line. */
+static void printEntryFile()
 {
-    FILE *fp;
-    char *fileName2 = (char*)malloc(sizeof(char)*(strlen(fileName) + 1));
-    strcpy(fileName2, fileName);
-    fp = fopen(strcat(fileName2, ".ent"), "w");
+    FILE *fp = openFile(".ent");
     size_t i;
     for(i = 0; i < numEntries; i++)
     {
-        fprintf(fp,"%s\t", entrySymbols[i].name);
-        fprintf(fp,"%07ld", symbolTable[isInTable(entrySymbols[i].name)].address);
-        fprintf(fp,"\n");
+        fprintf(fp,"%s\t%07ld\n", entrySymbols[i].name, symbolTable[isInTable(entrySymbols[i].name)].address);
     }
-    free(fileName2);
 }
 
 
-void printExtFile()
+/* The function creates a file with an ext extension
+ * and prints the '.extern' symbols and the numbers of the line those symbols are used. */
+static void printExtFile()
 {
     size_t i;
-    FILE *fp;
-    char *fileName2 = (char*)malloc(sizeof(char)*(strlen(fileName) + 1));
-    strcpy(fileName2, fileName);
-    fp = fopen(strcat(fileName2, ".ext"), "w");
+    FILE *fp = openFile(".ext");
+
     for(i = 0; i < numExterns; i++)
     {
-        fprintf(fp, "%s\t", externs[i].name);
-        fprintf(fp, "%07ld", externs[i].numLine + START);
-        fprintf(fp, "\n");
+        fprintf(fp, "%s\t%07ld\n", externs[i].name, externs[i].numLine + START);
     }
-    free(fileName2);
 }
 
 
-void freeTable()
+/* The function releases the dynamically assigned tables whose use has ended */
+static void freeTable()
 {
     free(externs);
     free(entrySymbols);
     free(symbolTable);
+    free(fileName);
+    numExterns = 0;
 }
 
 
-void printFilesIfValid(int *output)
+/* The function creates all the required output files and prints the output. */
+static void printFilesIfValid(int *output)
 {
     if(isValidFile)
     {
         printToFile(output);
-        printEntryFile();
-        printExtFile();
+        if (numEntries)
+            printEntryFile();
+        if(numExterns)
+            printExtFile();
     }
 }
 
 
+/* ----------- The main functions in the file ----------- */
+
+/*The function gets the file names and number of files.
+It goes through each file twice and if no errors are found in it, it creates the appropriate files.*/
 void readFiles(int argc, char *argv[])
 {
     size_t i;
     int * output;
-
+    FILE *fp;
     for (i = 1; i < argc; i++)
     {
         char* file = (char*)malloc(sizeof(char)*strlen(argv[i] + 1));
@@ -154,12 +168,29 @@ void readFiles(int argc, char *argv[])
         strcpy(fileName, argv[i]);
         strcat(file, ".as");
         isValidFile = true;
-        firstIteration(file);
+        fp = fopen(file, "r");
+
+        if (fp == NULL)
+        {
+            error(E_FILE, 0);
+            continue;
+        }
+        firstIteration(fp);
         output = secondIteration();
-        printFilesIfValid(output);
-        freeTable();
+
+        if(isValidFile)
+            printFilesIfValid(output);
+
         free(output);
         free(file);
-        free(fileName);
+        freeTable();
     }
+}
+
+
+/* The function gets the type of error and the line in which it was found, and prints an appropriate error */
+void error(Error err, size_t numLine)
+{
+    isValidFile = false;
+    printError(err, numLine);
 }

@@ -2,8 +2,8 @@
 #include "dst_operand.h"
 #include <stddef.h>
 #include "second_transition.h"
-#include "code_func.h"
-#include "read_files.h"
+#include "directives_table.h"
+#include "read_write_files.h"
 #include <stdlib.h>
 #include <string.h>
 #include "first_transition.h"
@@ -11,15 +11,17 @@
 extern Symbol *symbolTable;
 extern Directive *directive;
 
-extern EntrySymbol* entrySymbols;
-extern size_t numEntries;
 
 
-static Word setSecondWord(bool val, int word, Word word1)
+/* ------------------ Auxiliary Functions ---------------- */
+
+/* The function takes a boolean value that indicates if there is another Third memory word in the directive,
+ * and if so - what is the memory word. It updates the memory words and returns them. */
+static Word setThirdWord(bool val, int word, Word word1)
 {
     Word result = word1;
-    result.isSecond = val;
-    result.secondWord =  word;
+    result.isThird = val;
+    result.thirdWord =  word;
     result.extSymbols[1] = -1;
     return result;
 }
@@ -33,13 +35,14 @@ static Word relativeAddress(DirectiveLine line, size_t j, size_t directiveIdx, W
     int idx;
     while (line.text[j] && line.text[j] != ' ' && line.text[j] != '\t' && line.text[j] != '\n' && line.text[j++] != ',') {}
     idx = isInTable(str_slice(line.text, k + 1, j));
-    if (idx == -1 || symbolTable[idx].type == 1)
+    if (idx == -1 || symbolTable[idx].isExtern == 1)
         error(E_SECOND_OPERAND, line.lineNum);
-    else if (directives[directiveIdx].AddressingMethodDst[2]) {
+    else if (directives[directiveIdx].AddressingMethodDst[2])
+    {
         setCurrWordBits(11, 12, 2);
         setCurrWordBits(8, 10, 0);
-        result = setSecondWord(true, ((symbolTable[idx].address - line.address) << 3)|4, result);
-        if(symbolTable[idx].type == 1)
+        result = setThirdWord(true, ((symbolTable[idx].address - line.address) << 3)|4, result);
+        if(symbolTable[idx].isExtern == 1)
             result.extSymbols[1] = idx;
     }
     else
@@ -65,9 +68,9 @@ static Word directAddress(DirectiveLine line, size_t j, size_t directiveIdx, Wor
     {
         setCurrWordBits(11, 12, 1);
         setCurrWordBits(8, 10, 0);
-        result = setSecondWord(true, (symbolTable[idx].address << 3)|symbolTable[idx].type, result);
+        result = setThirdWord(true, (symbolTable[idx].address << 3)|symbolTable[idx].isExtern, result);
 
-        if(symbolTable[idx].type == 1)
+        if(symbolTable[idx].isExtern == 1)
             result.extSymbols[1] = idx;
     }
     else
@@ -88,14 +91,16 @@ static Word immediateAddress(DirectiveLine line, size_t j, size_t directiveIdx, 
     else if (directives[directiveIdx].AddressingMethodDst[0])
     {
         setCurrWordBits(8, 12, 0);
-        result = setSecondWord(true, (atoi(str_slice(line.text, k + 1, j)) << 3)|4, result);
+        result = setThirdWord(true, (atoi(str_slice(line.text, k + 1, j)) << 3)|4, result);
     }
     else
         error(E_SECOND_OPERAND, line.lineNum);
     return result;
 }
 
-/* The function gets a directive sentence that has a destination operand,
+/* ------------------ The main function in the file ---------------- */
+
+/* The function takes a directive sentence that has a destination operand,
  checks what the destination operand is and what its addressing method is and sets the appropriate bits.*/
 Word dstOperand(DirectiveLine line, size_t j, size_t directiveIdx, Word words_2nd_3rd)
 {
@@ -114,7 +119,7 @@ Word dstOperand(DirectiveLine line, size_t j, size_t directiveIdx, Word words_2n
     {
         setCurrWordBits(11, 12, 3);
         setCurrWordBits(8, 10, line.text[j + 1] - 48);
-        result.isSecond = false;
+        result.isThird = false;
     }
     else
         error(E_SECOND_OPERAND, line.lineNum);

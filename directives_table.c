@@ -1,12 +1,12 @@
-#include "code_func.h"
+#include "directives_table.h"
 #include <string.h>
 #include <stdlib.h>
 
 #define NUM_DIR 16
 
 
-/**
- * Extracts a selection of string and return a new string or NULL.
+/* -------------General auxiliary function in the program-------------- */
+/* Extracts a selection of string and return a new string or NULL.
  * It supports both negative and positive indexes.
  */
 char * str_slice(const char str[], int slice_from, int slice_to)
@@ -47,10 +47,13 @@ char * str_slice(const char str[], int slice_from, int slice_to)
 }
 
 
-char * instructions_names[NUM_DIR] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc",
+/* ---------- Global tables for directives information ---------- */
+
+char * directivesNames[NUM_DIR] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc",
                                        "dec", "jmp", "bne", "jsr", "red", "prn", "rts", "stop"};
 
-int instructions_opcodes[NUM_DIR][2] =
+
+int directivesOpcodes[NUM_DIR][2] =
         {
         {0, 0},
         {1, 0},
@@ -70,6 +73,7 @@ int instructions_opcodes[NUM_DIR][2] =
         {15, 0}
 };
 
+
 int addressingMethodSrc[NUM_DIR][ADDRESS_MTD_NUM] = {
         {1, 1, 0, 1},
         {1, 1, 0, 1},
@@ -88,6 +92,7 @@ int addressingMethodSrc[NUM_DIR][ADDRESS_MTD_NUM] = {
         {0, 0, 0, 0},
         {0, 0, 0, 0}
 };
+
 
 int addressingMethodDst[NUM_DIR][ADDRESS_MTD_NUM] = {
         {0, 1, 0, 1},
@@ -109,15 +114,19 @@ int addressingMethodDst[NUM_DIR][ADDRESS_MTD_NUM] = {
 };
 
 
+/* ----------- The main functions in this file ----------- */
+
+/* The function initializes the tables of directives - for each directive its name,
+   opcode and addressing methods are allowed for the source operand and the target operand.*/
 void init()
 {
     size_t i;
     size_t j;
     for(i = 0; i < NUM_DIR; i++)
     {
-        directives[i].opcode = instructions_opcodes[i][0];
-        directives[i].funct = instructions_opcodes[i][1];
-        directives[i].name = instructions_names[i];
+        directives[i].opcode = directivesOpcodes[i][0];
+        directives[i].funct = directivesOpcodes[i][1];
+        directives[i].name = directivesNames[i];
         for (j = 0; j < ADDRESS_MTD_NUM; ++j)
         {
             directives[i].AddressingMethodSrc[j] = addressingMethodSrc[i][j];
@@ -127,12 +136,14 @@ void init()
 }
 
 
-int getOpcode(const char *instruction_name)
+/* The function takes a string and checks if it is the name of a directive.
+   If so, it returns the directive index in the directive table. Otherwise, it returns -1. */
+int getDirIdx(const char *directive_name)
 {
     int i;
     for(i = 0; i < NUM_DIR; ++i)
     {
-        if(!strcmp(instruction_name, instructions_names[i]))
+        if(!strcmp(directive_name, directivesNames[i]))
         {
             return i;
         }

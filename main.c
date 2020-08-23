@@ -1,6 +1,6 @@
 
-#include "code_func.h"
-#include "read_files.h"
+#include "directives_table.h"
+#include "read_write_files.h"
 #define LEN 31
 
 /*

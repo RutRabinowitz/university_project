@@ -1,5 +1,5 @@
-#ifndef C_MMN_14_READ_FILES_H
-#define C_MMN_14_READ_FILES_H
+#ifndef C_MMN_14_READ_WRITE_FILES_H
+#define C_MMN_14_READ_WRITE_FILES_H
 #include <stddef.h>
 
 typedef enum Error
@@ -20,4 +20,4 @@ void readFiles(int argc, char *argv[]);
 /* The function gets the type of error and the line in which it was found, and prints an appropriate error */
 void error(Error err, size_t numLine);
 
-#endif /*C_MMN_14_READ_FILES_H*/
+#endif /*C_MMN_14_READ_WRITE_FILES_H*/

@@ -1,9 +1,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "code_func.h"
+#include "directives_table.h"
 #include "first_transition.h"
-#include "read_files.h"
+#include "read_write_files.h"
 
 #define SPC 32
 #define TAB 9
@@ -15,7 +15,7 @@
 extern Symbol *symbolTable;
 extern DirectiveLine *memory;
 extern GuidanceLine *data;
-extern EntrySymbol *entrySymbols;
+extern ExternSymbol *entrySymbols;
 
 extern size_t ic;
 extern size_t dc;
@@ -32,8 +32,10 @@ bool isNumber(const char * str)
 {
     int i, len = strlen(str);
     bool flag = true;
+    
     if (str && str[0] == '0')
         flag = false;
+
     for(i = 0; i < len && flag; i++)
     {
         if(!((str[i] >= '0' && str[i] <= '9')  || (i == 0 && (str[i] == '-' || str[i] == '+'))))
@@ -146,7 +148,7 @@ static void entryGuidance(const char * line, size_t i, size_t lineNum)
     if (i < j)
     {
         numEntries++;
-        entrySymbols = (EntrySymbol*) realloc(entrySymbols, numEntries * sizeof(Symbol));
+        entrySymbols = (ExternSymbol*) realloc(entrySymbols, numEntries * sizeof(ExternSymbol));
         strcpy(entrySymbols[numEntries - 1].name, str_slice(line, i, j));
     }
     /*make sure that there are no words / characters later in the line illegally.*/
@@ -165,6 +167,7 @@ static void externalGuidance(const char * line, size_t i, size_t lineNum)
         error(E_SYNTAX, lineNum);
         return;
     }
+
     i += 8;
     while (line[i] && (line[i] == NEW_LINE || line[i] == SPC || line[i] == TAB)){i++;}
     j = i;
@@ -176,8 +179,8 @@ static void externalGuidance(const char * line, size_t i, size_t lineNum)
         symbolTable = (Symbol *) realloc(symbolTable, symbolNum * sizeof(Symbol));
         strcpy(symbolTable[symbolNum - 1].symbolName, str_slice(line, i, j));
         symbolTable[symbolNum - 1].address = 0;
-        symbolTable[symbolNum - 1].type = 1;
-        symbolTable[symbolNum - 1].isInstruction = false;
+        symbolTable[symbolNum - 1].isExtern = 1;
+        symbolTable[symbolNum - 1].isDirective = false;
     }
     else
     {
